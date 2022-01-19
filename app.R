@@ -17,8 +17,6 @@ library(phangorn)
 library(bios2mds)
 library(zip)
 
-setwd("/Users/rndnj/Documents/Prototype 20220119")
-
 source("Source/MiDataProc.Data.Upload.R")
 source("Source/MiDataProc.Alpha.Cross.Sectional.R")
 source("Source/MiDataProc.Alpha.Longitudinal.R")
