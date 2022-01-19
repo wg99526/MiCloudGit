@@ -17,8 +17,6 @@ library(phangorn)
 library(bios2mds)
 library(zip)
 
-setwd("/Users/rndnj/Documents/Prototype 20220119")
-
 source("Source/MiDataProc.Data.Upload.R")
 source("Source/MiDataProc.Alpha.Cross.Sectional.R")
 source("Source/MiDataProc.Alpha.Longitudinal.R")
@@ -394,7 +392,7 @@ server = function(input, output, session){
   biom <- sub.biom
   
   env <- new.env()
-  nm <- load(file = "Data/BMI/biom.MZ.BMI.Rdata", env)[1]
+  nm <- load(file = "Data/biom.MZ.BMI.Rdata", env)[1]
   BMI <- env[[nm]]
   
   ori.biom <- biom
