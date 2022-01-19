@@ -392,7 +392,7 @@ server = function(input, output, session){
   biom <- sub.biom
   
   env <- new.env()
-  nm <- load(file = "Data/biom.MZ.BMI.Rdata", env)[1]
+  nm <- load(file = "Data/BMI/biom.MZ.BMI.Rdata", env)[1]
   BMI <- env[[nm]]
   
   ori.biom <- biom
