@@ -4,15 +4,17 @@ cross-sectional or longitudinal study, and with or without covariate adjustment
 
 Maintainer: Won Gu won.gu@stonybrook.edu
 
+Depends: R (≥ 3.0.2)
+
 Description: ~~
 
 URL:
 
-Find the tool at: 
+The application is available at:
 
 https://
 
-## Run from your environment
+## Launch app
 
 In R terminal:
 ```
@@ -20,6 +22,8 @@ library(shiny)
 
 runGithub("micloud", "wg99526", ref = "main")
 ```
+
+Using Rstudio is recommended, but not required
 
 ## Prerequisites
 
