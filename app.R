@@ -9,10 +9,11 @@ list.of.packages <- c('seqinr', 'shinydashboard', 'dashboardthemes', 'tidyverse'
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 
-list.of.packages_remotes <- c('phyloseq', 'biomformat', 'GLMM-MiRKAT', 'NBZIMM')
+if(!require('phyloseq')) remotes::install_github('joey711/phyloseq')
+if(!require('biomformat')) remotes::install_github('joey711/biomformat')
+if(!require('GLMM-MiRKAT')) remotes::install_github('hk1785/GLMM-MiRKAT')
+if(!require('NBZIMM')) remotes::install_github('nyiuab/NBZIMM')
 
-new.packages_remotes <- list.of.packages_remotes[!(list.of.packages_remotes %in% installed.packages()[,"Package"])]
-if(length(new.packages_remotes)) remotes::install_github(new.packages_remotes)
 
 library(seqinr)
 library(shiny)
