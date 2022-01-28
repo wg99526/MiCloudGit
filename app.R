@@ -1,4 +1,19 @@
 rm(list = ls())
+
+list.of.packages <- c('seqinr', 'shinydashboard', 'dashboardthemes', 'tidyverse', 'plotly', 'shinyWidgets', 'shinyjs', 'googleVis', 'xtable', 
+                      'DT', 'htmltools', 'phangorn', 'bios2mds', 'zip', 'zCompositions', 'dplyr', 'forestplot', 'quantreg', 'fossil', 'picante',
+                      'entropart', 'lme4', 'lmerTest', 'broom.mixed', 'gee', 'geepack', 'dirmult', 'robustbase', 'robCompositions', 'BiasedUrn',
+                      'CompQuadForm', 'GUniFrac', 'ecodist', 'MiRKAT', 'gridExtra', 'ggplot2', 'patchwork', 'ggthemes', 'erer', 'DiagrammeR', 'stringr',
+                      'devtools', 'betareg', 'reticulate', 'nlme', 'glmmTMB', 'glmm', 'remotes', 'gridGraphics', 'compositions')
+
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+
+list.of.packages_remotes <- c('phyloseq', 'biomformat', 'GLMM-MiRKAT', 'NBZIMM')
+
+new.packages_remotes <- list.of.packages_remotes[!(list.of.packages_remotes %in% installed.packages()[,"Package"])]
+if(length(new.packages_remotes)) remotes::install_github(new.packages_remotes)
+
 library(seqinr)
 library(shiny)
 library(shinydashboard)
