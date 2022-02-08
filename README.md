@@ -34,17 +34,36 @@ install.packages("shiny")
 ```
 
 ```
-'seqinr', 'shinydashboard', 'dashboardthemes', 'tidyverse', 'plotly', 'shinyWidgets', 'shinyjs',
-'googleVis', 'xtable', 'DT', 'htmltools', 'phangorn', 'bios2mds', 'zip', 'zCompositions', 'dplyr', 
-'forestplot', 'quantreg', 'fossil', 'picante', 'entropart', 'lme4', 'lmerTest', 'broom.mixed', 
-'gee', 'geepack', 'dirmult', 'robustbase', 'robCompositions', 'BiasedUrn', 'CompQuadForm', 'GUniFrac',
-'ecodist', 'MiRKAT', 'gridExtra', 'ggplot2', 'patchwork', 'ggthemes', 'erer', 'DiagrammeR', 'stringr',
-'devtools', 'betareg', 'reticulate', 'nlme', 'glmmTMB', 'glmm', 'remotes', 'gridGraphics', 'compositions'
+list.of.packages <- c('seqinr', 'shinydashboard', 'dashboardthemes', 'tidyverse', 'plotly', 'shinyWidgets', 'shinyjs', 'googleVis', 'xtable',   'DT', 'htmltools', 'phangorn', 'bios2mds', 'zip', 'zCompositions', 'dplyr', 'forestplot', 'quantreg', 'fossil', 'picante',  'entropart',     'lme4', 'lmerTest', 'broom.mixed', 'gee', 'geepack', 'dirmult', 'robustbase', 'robCompositions', 'BiasedUrn', 'CompQuadForm', 'GUniFrac',     'ecodist', 'MiRKAT', 'gridExtra', 'ggplot2', 'patchwork', 'ggthemes', 'erer', 'DiagrammeR', 'stringr', 'devtools', 'betareg', 'reticulate',   'nlme', 'glmmTMB', 'glmm', 'remotes', 'gridGraphics', 'compositions')
+
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
 ```
 
+phyloseq
 ```
-if(!require('phyloseq')) remotes::install_github('joey711/phyloseq')
-if(!require('biomformat')) remotes::install_github('joey711/biomformat')
-if(!require('GLMM-MiRKAT')) remotes::install_github('hk1785/GLMM-MiRKAT')
-if(!require('NBZIMM')) remotes::install_github('nyiuab/NBZIMM')
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("phyloseq")
 ```
+
+biomformat
+```
+source("https://bioconductor.org/biocLite.R")
+biocLite("biomformat")
+```
+
+GLMM-MiRKAT
+```
+library(devtools)
+install_github("hk1785/GLMM-MiRKAT", force=T)
+```
+
+
+NBZIMM
+```
+ library(remotes)
+ install_github("nyiuab/NBZIMM", force=T, build_vignettes=F)
+ ```
+ 
