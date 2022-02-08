@@ -33,3 +33,13 @@ shiny
 install.packages("shiny")
 ```
 
+```
+list.of.packages <- c('seqinr', 'shinydashboard', 'dashboardthemes', 'tidyverse', 'plotly', 'shinyWidgets', 'shinyjs', 'googleVis', 'xtable', 'DT', 'htmltools', 'phangorn', 'bios2mds', 'zip', 'zCompositions', 'dplyr', 'forestplot', 'quantreg', 'fossil', 'picante', 'entropart', 'lme4', 'lmerTest', 'broom.mixed', 'gee', 'geepack', 'dirmult', 'robustbase', 'robCompositions', 'BiasedUrn', 'CompQuadForm', 'GUniFrac', 'ecodist', 'MiRKAT', 'gridExtra', 'ggplot2', 'patchwork', 'ggthemes', 'erer', 'DiagrammeR', 'stringr', 'devtools', 'betareg', 'reticulate', 'nlme', 'glmmTMB', 'glmm', 'remotes', 'gridGraphics', 'compositions')
+```
+
+```
+if(!require('phyloseq')) remotes::install_github('joey711/phyloseq')
+if(!require('biomformat')) remotes::install_github('joey711/biomformat')
+if(!require('GLMM-MiRKAT')) remotes::install_github('hk1785/GLMM-MiRKAT')
+if(!require('NBZIMM')) remotes::install_github('nyiuab/NBZIMM')
+```
