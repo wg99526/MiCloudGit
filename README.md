@@ -34,7 +34,12 @@ install.packages("shiny")
 ```
 
 ```
-list.of.packages <- c('seqinr', 'shinydashboard', 'dashboardthemes', 'tidyverse', 'plotly', <br> 'shinyWidgets', 'shinyjs', 'googleVis', 'xtable', 'DT', <br> 'htmltools', 'phangorn', 'bios2mds', 'zip', 'zCompositions', <br> 'dplyr', 'forestplot', 'quantreg', 'fossil', 'picante', <br> 'entropart', 'lme4', 'lmerTest', 'broom.mixed', 'gee', <br> 'geepack', 'dirmult', 'robustbase', 'robCompositions', 'BiasedUrn', <br> 'CompQuadForm', 'GUniFrac', 'ecodist', 'MiRKAT', <br> 'gridExtra', 'ggplot2', 'patchwork', 'ggthemes', 'erer', <br> 'DiagrammeR', 'stringr', 'devtools', 'betareg', 'reticulate', <br> 'nlme', 'glmmTMB', 'glmm', 'remotes', 'gridGraphics', 'compositions')
+'seqinr', 'shinydashboard', 'dashboardthemes', 'tidyverse', 'plotly', 'shinyWidgets', 'shinyjs',
+'googleVis', 'xtable', 'DT', 'htmltools', 'phangorn', 'bios2mds', 'zip', 'zCompositions', 'dplyr', 
+'forestplot', 'quantreg', 'fossil', 'picante', 'entropart', 'lme4', 'lmerTest', 'broom.mixed', 
+'gee', 'geepack', 'dirmult', 'robustbase', 'robCompositions', 'BiasedUrn', 'CompQuadForm', 'GUniFrac',
+'ecodist', 'MiRKAT', 'gridExtra', 'ggplot2', 'patchwork', 'ggthemes', 'erer', 'DiagrammeR', 'stringr',
+'devtools', 'betareg', 'reticulate', 'nlme', 'glmmTMB', 'glmm', 'remotes', 'gridGraphics', 'compositions'
 ```
 
 ```
