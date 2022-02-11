@@ -13,7 +13,7 @@ URL: https://github.com/wg99526/micloud
 
 The application is available at:
 
-https://
+http://223.194.200.160:3838/
 
 ## Launch app
 
