@@ -60,7 +60,7 @@ install_github("nyiuab/NBZIMM", force=T, build_vignettes=F)
 ```
 
 
-Following codes includes rest of the packages required to launch the app. You can simply copy and paste these codes in R terminal, then it will examine which packages do not exist in your workspace and install them automatically.
+Following codes includes rest of the packages required to launch the app. You can simply copy and paste these codes into R terminal, then it will examine which packages do not exist in your workspace and install them automatically.
 
 ```
 list.of.packages <- c('seqinr', 'shinydashboard', 'dashboardthemes', 'tidyverse', 'plotly', 'shinyWidgets', 'shinyjs', 'googleVis', 'xtable', 'DT', 'htmltools', 'phangorn', 'bios2mds', 'zip', 'zCompositions', 'dplyr', 'forestplot', 'quantreg', 'fossil', 'picante',  'entropart', 'lme4', 'lmerTest', 'broom.mixed', 'gee', 'geepack', 'dirmult', 'robustbase', 'robCompositions', 'BiasedUrn', 'CompQuadForm', 'GUniFrac', 'ecodist', 'MiRKAT', 'gridExtra', 'ggplot2', 'patchwork', 'ggthemes', 'erer', 'DiagrammeR', 'stringr', 'devtools', 'betareg', 'reticulate',   'nlme', 'glmmTMB', 'glmm', 'remotes', 'gridGraphics', 'compositions')
