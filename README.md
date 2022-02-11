@@ -15,7 +15,7 @@ URL: http://223.194.200.160:3838/
 
 
 ## Launch App
-The web application supports up to five concurrent users. If the application is too crowded, you can launch the app from your computer by typing the following command after installing prerequisite packages
+The web application supports up to five concurrent users. If the application is too crowded, you can launch the app from your computer by typing the following command after installing prerequisite packages.
 
 In R terminal:
 ```
@@ -24,7 +24,7 @@ library(shiny)
 runGithub("micloud", "wg99526", ref = "main")
 ```
 
-Rstudio is not required to run the code above
+Rstudio is not required to run the code above.
 
 ## Prerequisites
 
