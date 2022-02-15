@@ -19,7 +19,7 @@ library(DiagrammeR)
 library(stringr)
 library(devtools)
 library(reticulate)
-library(broom.mixed)
+#library(broom.mixed)
 library(NBZIMM)
 library(nlme)
 #library(pscl)
@@ -30,7 +30,7 @@ library(gridExtra)
 library(glmmTMB)
 library(glmm)
 
-taxa.names.rank <- function(taxa.out){ ## input: taxa.out$count / taxa.out$clr... not just taxa.out
+taxa.names.rank <- function(taxa.out){ 
   taxon.names <- list()
   taxon.names <- lapply(taxa.out, function(x) str_split(names(x), ";"))
   dup.list <- list(NA,NA,NA,NA,NA,NA)
@@ -40,7 +40,6 @@ taxa.names.rank <- function(taxa.out){ ## input: taxa.out$count / taxa.out$clr..
   taxon.names.rank <- list()
   for(rank in 1:6){
     taxon <- lapply(taxon.names[[rank]], function(x) str_sub(x,start = 3))
-    
     taxon.names.rank[[rank]] <- sapply(taxon, tail, 1)
     
     if(length(taxon.names.rank[[rank]]) != length(unique(taxon.names.rank[[rank]]))){
@@ -49,13 +48,11 @@ taxa.names.rank <- function(taxa.out){ ## input: taxa.out$count / taxa.out$clr..
       for(i in 1:length(duplicated.taxons)){
         duplicated.taxon <- duplicated.taxons[i]
         ind.dup <- which(taxon.names.rank[[rank]] %in% duplicated.taxon)
-        print(ind.dup)
+        
         for(j in 1:length(ind.dup)){
           duplicated.taxon <- paste(duplicated.taxon,"*",collapse = "")
           taxon.names.rank[[rank]][ind.dup[j]] <- duplicated.taxon 
-          #taxon
-          print( taxon[ind.dup[j]])
-          dup.list[[rank]][j] <- paste(duplicated.taxon, " : ", paste(paste(ranks[1:2], unlist(taxon[ind.dup[j]]), sep = ""), collapse = " | "), sep = "")
+          dup.list[[rank]][j] <- paste(duplicated.taxon, " : ", paste(paste(ranks[1:(rank+1)], unlist(taxon[ind.dup[j]]), sep = ""), collapse = " | "), sep = "")
         }
       }
     }
@@ -67,69 +64,6 @@ taxa.names.rank <- function(taxa.out){ ## input: taxa.out$count / taxa.out$clr..
 #####################
 # Data manipulation #
 #####################
-# 
-# is.mon.rev.bin.con <- function(sam.dat) {
-#   
-#   n.var <- ncol(sam.dat)
-#   n.sam <- nrow(sam.dat)
-#   is.mon <- logical()
-#   is.rev <- logical()
-#   is.bin <- logical()
-#   is.con <- logical()
-#   
-#   for (i in 1:n.var) {
-#     sam.var <- as.matrix(sam.dat[,i])
-#     if (length(table(sam.var)) == 1) {
-#       is.mon[i] <- TRUE
-#     }
-#     if (length(table(sam.var)) != 1) {
-#       is.mon[i] <- FALSE
-#     }
-#     if (length(table(sam.var)) == n.sam & sum(is.na(as.numeric(sam.var))) == n.sam) {
-#       is.rev[i] <- TRUE
-#     }
-#     if (length(table(sam.var)) != n.sam | sum(is.na(as.numeric(sam.var))) != n.sam) {
-#       is.rev[i] <- FALSE
-#     }
-#     if (length(table(sam.var)) == 2) {
-#       is.bin[i] <- TRUE
-#     }
-#     if (length(table(sam.var)) != 2) {
-#       is.bin[i] <- FALSE
-#     }
-#     if (length(table(sam.var)) != 2 & sum(is.na(as.numeric(sam.var))) != n.sam) {
-#       is.con[i] <- TRUE
-#     }
-#     if (length(table(sam.var)) == 2 & sum(is.na(as.numeric(sam.var))) != n.sam) {
-#       is.con[i] <- FALSE
-#     }
-#     if (sum(is.na(as.numeric(sam.var))) == n.sam) {
-#       is.con[i] <- FALSE
-#     }
-#     
-#   }
-#   return(list(is.mon = is.mon, is.rev = is.rev, is.bin = is.bin, is.con = is.con))
-# }
-# 
-# pri.func <- function(sam.dat, mon.rev.bin.con) {
-#   colnames(sam.dat)[(mon.rev.bin.con$is.bin | mon.rev.bin.con$is.con) & !mon.rev.bin.con$is.mon]
-# }
-# 
-# is.bin.con.pri <- function(sam.dat, mon.rev.bin.con, sel.pri.var) {
-#   ind <- which(colnames(sam.dat) == sel.pri.var)
-#   if (mon.rev.bin.con$is.bin[ind]) {
-#     out <- "Binary"
-#   } else {
-#     out <- "Continuous"
-#   }
-#   return(out)
-# }
-# 
-# cov.func <- function(sam.dat, mon.rev.bin.con, sel.pri.var) {
-#   ind.pri <- colnames(sam.dat) == sel.pri.var
-#   ind.mon.rev <- mon.rev.bin.con$is.mon | mon.rev.bin.con$is.rev
-#   return(colnames(sam.dat)[!(ind.pri | ind.mon.rev)])
-# }
 
 cluster.func <- function(sam.dat, mon.sin.rev.bin.con, selected.var) {
   ind.pri <- colnames(sam.dat) %in% selected.var
@@ -140,16 +74,6 @@ cluster.func <- function(sam.dat, mon.sin.rev.bin.con, selected.var) {
 taxa.bin.var.func <- function(sam.dat) {
   var.names <- colnames(sam.dat)
   return(var.names)
-}
-
-taxa.bin.cat.func <- function(sam.dat, sel.bin.var) {
-  bin.var <- unlist(sam.dat[,sel.bin.var])
-  bin.var.no.na <- bin.var[!is.na(bin.var)]
-  bin.cat <- unique(bin.var.no.na)
-  if (length(bin.cat) != 2) {
-    stop(paste(sel.bin.var, " is not binary", sep = ""))
-  }
-  return(bin.cat)
 }
 
 taxa.bin.cat.ref.ori.func <- function(sam.dat, sel.bin.var = "ecig_status") {
@@ -318,13 +242,11 @@ taxa.bin.lmer.func <- function(bin.var, id.var, taxa) {
       dat <- as.data.frame(cbind(taxon, bin.var, id.var))
       dat[,1] <- as.numeric(dat[,1])
       f <- formula(paste(colnames(dat)[1], " ~ ", colnames(dat)[2], "+ (1 | ", colnames(dat)[3], ")", sep = ""))
+      
       fit <- try(lmer(f, data = dat), silent = TRUE)
-      
-      
       est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
       std.err <- tryCatch(summary(fit)$coefficients[2,2], error = function(err) NA)
       #ci <- tryCatch(c(est - qnorm(0.975)*std.err, est + qnorm(0.975)*std.err), error = function(err) c(NA,NA))
-      
       df <- tryCatch(summary(fit)$coefficients[2,3], error = function(err) NA)
       if(is.na(df)){
         ci <- tryCatch(c(est - qnorm(0.975)*std.err, est + qnorm(0.975)*std.err), error = function(err) c(NA,NA))
@@ -454,7 +376,6 @@ all.taxa.lmer.sig.graph <- function(out) {
   ci.tab.all <- matrix(c(NA, NA, NA), 1, 3)
   for (i in 1:6) {
     ind.sig <- which(out[[i]]$Q.value < 0.05)
-    #print(ind.sig)
     if (length(ind.sig) >= 1) {
       sig.out <- out[[i]][ind.sig,]
       taxa <- rownames(sig.out)
@@ -502,7 +423,6 @@ all.taxa.lmer.logit.sig.graph <- function(out, mult.test.cor = TRUE) {
       ci.tab.all <- rbind(ci.tab.all, ci.tab)
     } 
   }
-  #print(head(text.tab.all))
   if(nrow(ci.tab.all) >=2) {
     text.tab.all <- cbind(c("ID", 1:(nrow(text.tab.all)-1)), text.tab.all)
     forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3], 
@@ -641,12 +561,10 @@ taxa.bin.logit.glmm.b.func <- function(bin.var, id.var, taxa, rare.count = FALSE
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     lmer.out <- matrix(NA, n.tax, 6)
-    print(n.tax)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
       dat <- as.data.frame(cbind(bin.var, taxon, id.var))
       if(rare.count){
-        print("rare.count glmmb")
         f <- formula(paste(colnames(dat)[1], " ~ ", "scale(", colnames(dat)[2], ") + (1|", colnames(dat)[3], ")", sep = ""))
       }else{
         f <- formula(paste(colnames(dat)[1], " ~ ", colnames(dat)[2], " + (1|", colnames(dat)[3], ")", sep = ""))
@@ -689,12 +607,10 @@ taxa.bin.logit.gee.reg.coef.func <- function(bin.var, id.var, taxa, rare.count =
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     lmer.out <- matrix(NA, n.tax, 6)
-    #print(n.tax)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
       dat <- as.data.frame(cbind(bin.var, taxon, id.var))
       if(rare.count){
-        print("rare.count gee")
         f <- formula(paste(colnames(dat)[1], " ~ ", "scale(", colnames(dat)[2], ")", sep = ""))
       }else{
         f <- formula(paste(colnames(dat)[1], " ~ ", colnames(dat)[2], sep = ""))
@@ -740,12 +656,10 @@ taxa.bin.cov.logit.glmm.b.func <- function(bin.var, id.var, cov.var, taxa, rare.
       taxon <- taxa[,i]
       dat <- as.data.frame(cbind(bin.var, taxon, id.var, cov.var))
       if(rare.count){
-        print("rare.count cov glmmb")
         f <- formula(paste(colnames(dat)[1], " ~ ", "scale(", colnames(dat)[2], ") + ", paste(colnames(cov.var), collapse = "+"), "+ (1|", colnames(dat)[3], ")", sep = ""))
       }else{
         f <- formula(paste(colnames(dat)[1], " ~ ", colnames(dat)[2], paste(colnames(cov.var), collapse = "+"), "+ (1|", colnames(dat)[3], ")", sep = ""))
       }
-      #f <- formula(paste(colnames(dat)[1], " ~ ", colnames(dat)[2], paste(colnames(cov.var), collapse = "+"), "+ (1|", colnames(dat)[3], ")", sep = ""))
       
       fit <- try(glmer(f, data = dat, family = "binomial"(link = "logit")), silent = TRUE)
       est <- tryCatch(summary(fit)$coefficients[2,"Estimate"], error = function(err) NA)
@@ -784,17 +698,10 @@ taxa.bin.cov.logit.gee.reg.coef.func <- function(bin.var, id.var, cov.var, taxa,
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     lmer.out <- matrix(NA, n.tax, 6)
-    #print(n.tax)
-    print(rare.count)
-    
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
       dat <- as.data.frame(cbind(bin.var, cov.var, taxon, id.var))
-      #dat[,2] <- as.numeric(dat[,2])
-      #dat[,1] <- as.numeric(dat[,1])
-      
       if(rare.count){
-        print("rare.count gee cov")
         f <- formula(paste(colnames(dat)[1], " ~ ", "scale(taxon)", "+", paste(colnames(cov.var), collapse = "+"), sep = ""))
       }else{
         f <- formula(paste(colnames(dat)[1], " ~ ", "taxon", "+", paste(colnames(cov.var), collapse = "+"), sep = ""))
@@ -807,7 +714,6 @@ taxa.bin.cov.logit.gee.reg.coef.func <- function(bin.var, id.var, cov.var, taxa,
       pvs <- tryCatch(2*pnorm(-abs(z), mean = 0, sd = 1), error = function(err) NA)
       
       out.logit <-c(est, std.err, z, ci, pvs)
-      #out.logit <- c(est, se, z, ci, pvs)
       lmer.out[i,] <- out.logit
     }
     
@@ -818,103 +724,25 @@ taxa.bin.cov.logit.gee.reg.coef.func <- function(bin.var, id.var, cov.var, taxa,
   }
 }
 
-# taxa.bin.cov.logit.gee.reg.coef.func <- function(bin.var, id.var, cov.var, taxa) {
-#   n.tax <- ncol(taxa)
-#   lmer.out <- matrix(NA, n.tax, 6)
-#   #print(n.tax)
-#   for (i in 1:n.tax) {
-#     taxon <- taxa[,i]
-#     dat <- as.data.frame(cbind(bin.var, cov.var, taxon, id.var))
-#     #dat[,2] <- as.numeric(dat[,2])
-#     #dat[,1] <- as.numeric(dat[,1])
-#     f <- formula(paste(colnames(dat)[1], " ~ ", "taxon", "+", paste(colnames(cov.var), collapse = "+"), sep = ""))
-#     fit <- geeglm(f, id = as.factor(id.var), data = dat, corstr="exchangeable", family = "binomial"(link = "logit"))
-#     est <- summary(fit)$coefficients[2,"Estimate"]
-#     se <- summary(fit)$coefficients[2,"Std.err"]
-#     ci <- c(est+qnorm(c(0.025, 0.975))*se)
-#     wald <- summary(fit)$coefficients[2,"Wald"]
-#     pvs <- summary(fit)$coefficients[2,4]
-#     
-#     out.logit <-c(est, se, wald, ci, pvs)
-#     #out.logit <- c(est, se, z, ci, pvs)
-#     lmer.out[i,] <- out.logit
-#   }
-#   
-#   lmer.out <- as.data.frame(lmer.out)
-#   rownames(lmer.out) <- colnames(taxa)
-#   colnames(lmer.out) <- c("Est", "Std Err", "z value", "Lower", "Upper", "P.value")
-#   return(lmer.out)
-# }
-
-# all.taxa.bin.cov.logit.gee <- function(bin.var, id.var, cov.var, taxa, multi.method = "BH") {
-#   tax.out <- list()
-#   for (i in 1:6) {
-#     taxa.test.out <- taxa.bin.cov.logit.gee.func(bin.var = bin.var, id.var = id.var, cov.var = cov.var, taxa = taxa[[i]])
-#     taxa.test.q.out <- q.func(taxa.test.out, method = multi.method)
-#     tax.out[[i]] <- taxa.test.q.out
-#   }
-#   names(tax.out) <- c("Phylum", "Class", "Order", "Family", "Genus", "Species")
-#   return(tax.out)
-# }
-# 
-# taxa.bin.cov.logit.gee.func <- function(bin.var, id.var, cov.var, taxa) {
-#   n.tax <- ncol(taxa)
-#   lmer.out <- matrix(NA, n.tax, 6)
-#   #print(n.tax)
-#   for (i in 1:n.tax) {
-#     taxon <- taxa[,i]
-#     dat <- as.data.frame(cbind(bin.var, cov.var, taxon, id.var))
-#     #dat[,2] <- as.numeric(dat[,2])
-#     #dat[,1] <- as.numeric(dat[,1])
-#     f <- formula(paste(colnames(dat)[1], " ~ ", "taxon", "+", paste(colnames(cov.var), collapse = "+"), sep = ""))
-#     fit <- geeglm(f, id = as.factor(id.var), data = dat, corstr="exchangeable", family = "binomial"(link = "logit"))
-#     
-#     est <- summary(fit)$coefficients[2,"Estimate"]
-#     se <- summary(fit)$coefficients[2,"Std.err"]
-#     ci <- exp(est + qnorm(c(0.025, 0.975))*se)
-#     wald <- summary(fit)$coefficients[2,"Wald"]
-#     pvs <- summary(fit)$coefficients[2,4]
-#     
-#     out.logit <-c(exp(est), get.or.se.lmer(fit)[2], wald, ci, pvs)
-#     lmer.out[i,] <- out.logit
-#     
-#   }
-#   lmer.out <- as.data.frame(lmer.out)
-#   rownames(lmer.out) <- colnames(taxa)
-#   colnames(lmer.out) <- c("OR", "Std Err", "Wald", "Lower", "Upper", "P.value")
-#   return(lmer.out)
-# }
-
 ################################
 # Negative Binomial Regression #
 ################################
 
-all.taxa.bin.glmm.nb <- function(bin.var, id.var, taxa, multi.method = "BH", rarefy = FALSE) {
+all.taxa.bin.glmm.nb <- function(bin.var, id.var, taxa, library.size, multi.method = "BH") {
   tax.out <- list()
-  if(rarefy == FALSE){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.bin.glmm.nb.func(bin.var = bin.var, id.var = id.var, taxa = taxa[[i]])
-      count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
-  } else if(rarefy == TRUE){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.bin.glmm.nb.rarefy.func(bin.var = bin.var, id.var = id.var, taxa = taxa[[i]])
-      count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
+  for (i in 1:6) {
+    count.taxa.test.out <- taxa.bin.glmm.nb.func(bin.var = bin.var, id.var = id.var, taxa = taxa[[i]], library.size)
+    count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
+    tax.out[[i]] <- count.taxa.test.q.out
   }
-  
   names(tax.out) <- c("phylum", "class", "order", "family", "genus", "species")
   return(tax.out)
 }
 
-taxa.bin.glmm.nb.func <- function(bin.var, id.var, taxa) {
+taxa.bin.glmm.nb.func <- function(bin.var, id.var, taxa, library.size) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     lmer.out <- matrix(NA, n.tax, 6)
-    library.size <- apply(taxa,1, sum)
-    #print(n.tax)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
       y <- as.numeric(taxon)
@@ -923,17 +751,13 @@ taxa.bin.glmm.nb.func <- function(bin.var, id.var, taxa) {
       dat <- cbind.data.frame(y,x,cluster)
       
       fit.nb <- try(glmm.nb(y ~ x + offset(log(library.size)), random = ~1|cluster), silent = TRUE)
+      est <- tryCatch(summary(fit.nb)$tTable[2,1], error = function(err) NA)
+      std.err <- tryCatch(summary(fit.nb)$tTable[2,2], error = function(err) NA)
+      df <- tryCatch(summary(fit.nb)$tTable[2,3], error = function(err) NA)
+      ci <- tryCatch(c(est - qt(0.975, df = df)*std.err, est + qt(0.975, df = df)*std.err), error = function(err) c(NA,NA))
+      p.val <- tryCatch(summary(fit.nb)$tTable[2,5], error = function(err) NA)
       
-      info <- try(fixed.nb(fit.nb), silent = TRUE)
-      interval <- try(intervals(fit.nb, which = "fixed"), silent = TRUE)
-      ci.lower <- tryCatch(interval$fixed[2,"lower"], error = function(err) NA)
-      ci.upper <- tryCatch(interval$fixed[2,"upper"], error = function(err) NA)
-      df = NA
-      est <- tryCatch(summary(fit.nb)$coefficients$fixed[2], error = function(err) NA)
-      std.err <- tryCatch(info$dist[2,"Std.Error"], error = function(err) NA)
-      p.val <- tryCatch(info$dist[2,"pvalue"], error = function(err) NA)
-      out.nb <- c(est, std.err, df, ci.lower, ci.upper, p.val)
-      #}
+      out.nb <- c(est, std.err, df, ci, p.val)
       lmer.out[i,] <- out.nb
     }
     rownames(lmer.out) <- colnames(taxa)
@@ -944,76 +768,22 @@ taxa.bin.glmm.nb.func <- function(bin.var, id.var, taxa) {
   }
 }
 
-taxa.bin.glmm.nb.rarefy.func <- function(bin.var, id.var, taxa) {
-  if(!is.null(taxa)){
-    n.tax <- ncol(taxa)
-    lmer.out <- matrix(NA, n.tax, 6)
-    library.size <- apply(taxa,1, sum)
-    #print(n.tax)
-    for (i in 1:n.tax) {
-      taxon <- taxa[,i]
-      y <- as.numeric(taxon)
-      x <- as.numeric(unlist(bin.var))
-      cluster <- id.var
-      dat <- cbind.data.frame(y,x,cluster)
-      
-      if(any(taxon == 0)) {
-        fit.zinb <- glmm.zinb(y ~ x, data = dat, random = ~1|cluster) # class(fit.zinb) == "zinbmm" "lme"
-        #print(intervals(fit.zinb)$fixed)
-        # print(fixed.zi(fit.zinb))
-        info <- fixed.zi(fit.zinb)
-        ci.lower <- intervals(fit.zinb, which = "fixed")$fixed[2,"lower"]
-        ci.upper <- intervals(fit.zinb, which = "fixed")$fixed[2,"upper"]
-        df = NA
-        out.nb <- c(summary(fit.zinb)$coefficients$fixed[2], info$dist[2,"Std.Error"], df, ci.lower, ci.upper, info$dist[2,"pvalue"])
-      } else {
-        fit.nb <- try(glmm.nb(y ~ x, random = ~1|cluster), silent = TRUE)
-        #print(intervals(fit.nb)$fixed)
-        info <- try(fixed.nb(fit.nb), silent = TRUE)
-        est <- tryCatch(summary(fit.nb)$coefficients$fixed[2], error = function(err) NA)
-        std.err <- tryCatch(info$dist[2,"Std.Error"], error = function(err) NA)
-        ci.lower <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"lower"], error = function(err) NA)
-        ci.upper <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"upper"], error = function(err) NA)
-        df = NA
-        out.nb <- c(est, std.err, df, ci.lower, ci.upper, info$dist[2,"pvalue"])
-      }
-      lmer.out[i,] <- out.nb
-    }
-    rownames(lmer.out) <- colnames(taxa)
-    lmer.out <- as.data.frame(lmer.out)
-    rownames(lmer.out) <- colnames(taxa)
-    colnames(lmer.out) <- c("Est", "Std Err", "DF", "Lower", "Upper", "P.value")
-    return(lmer.out)
-  }
-}
-
-all.taxa.bin.cov.glmm.nb <- function(bin.var, id.var, cov.var, taxa, multi.method = "BH", rarefy = FALSE) {
+all.taxa.bin.cov.glmm.nb <- function(bin.var, id.var, cov.var, taxa, library.size, multi.method = "BH") {
   tax.out <- list()
-  if(rarefy == FALSE){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.bin.cov.glmm.nb.func(bin.var = bin.var, id.var = id.var, cov.var = cov.var,taxa = taxa[[i]])
-      count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
-  }else if(rarefy == TRUE){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.bin.cov.glmm.nb.rarefy.func(bin.var = bin.var, id.var = id.var, cov.var = cov.var,taxa = taxa[[i]])
-      count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
+  for (i in 1:6) {
+    count.taxa.test.out <- taxa.bin.cov.glmm.nb.func(bin.var = bin.var, id.var = id.var, cov.var = cov.var,taxa = taxa[[i]], library.size)
+    count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
+    tax.out[[i]] <- count.taxa.test.q.out
   }
   names(tax.out) <- c("phylum", "class", "order", "family", "genus", "species")
   return(tax.out)
 }
 
-taxa.bin.cov.glmm.nb.func <- function(bin.var, id.var, cov.var, taxa) {
+taxa.bin.cov.glmm.nb.func <- function(bin.var, id.var, cov.var, taxa, library.size) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     lmer.out <- matrix(NA, n.tax, 6)
-    library.size <- apply(taxa,1, sum)
-    #print(n.tax)
     for (i in 1:n.tax) {
-      #print(i)
       taxon <- taxa[,i]
       y <- as.numeric(taxon)
       x <- as.numeric(unlist(bin.var))
@@ -1022,16 +792,14 @@ taxa.bin.cov.glmm.nb.func <- function(bin.var, id.var, cov.var, taxa) {
       
       f <- formula(paste("y ~ x +", paste(colnames(cov.var), collapse = "+"),"+ offset(log(library.size))", sep = ""))
       
-      fit.nb <- try(glmm.nb(f, random = ~1|cluster, data = dat), silent = TRUE)
+      fit.nb <- try(glmm.nb(f, data = dat, random = ~1|cluster), silent = TRUE)
+      est <- tryCatch(summary(fit.nb)$tTable[2,1], error = function(err) NA)
+      std.err <- tryCatch(summary(fit.nb)$tTable[2,2], error = function(err) NA)
+      df <- tryCatch(summary(fit.nb)$tTable[2,3], error = function(err) NA)
+      ci <- tryCatch(c(est - qt(0.975, df = df)*std.err, est + qt(0.975, df = df)*std.err), error = function(err) c(NA,NA))
+      p.val <- tryCatch(summary(fit.nb)$tTable[2,5], error = function(err) NA)
       
-      est <- tryCatch(summary(fit.nb)$coefficients$fixed[2], error = function(err) NA)
-      std.err <- tryCatch(fixed.nb(fit.nb)$dist[2,"Std.Error"], error = function(err) NA)
-      p.val <- tryCatch(fixed.nb(fit.nb)$dist[2,"pvalue"], error = function(err) NA)
-      ci.lower <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"lower"], error = function(err) NA)
-      ci.upper <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"upper"], error = function(err) NA)
-      df = NA
-      out.nb <- c(est, std.err, df, ci.lower, ci.upper, p.val)
-      # }
+      out.nb <- c(est, std.err, df, ci, p.val)
       lmer.out[i,] <- out.nb
     }
     rownames(lmer.out) <- colnames(taxa)
@@ -1042,111 +810,38 @@ taxa.bin.cov.glmm.nb.func <- function(bin.var, id.var, cov.var, taxa) {
   }
 }
 
-taxa.bin.cov.glmm.nb.rarefy.func <- function(bin.var, id.var, cov.var, taxa) {
-  if(!is.null(taxa)){
-    n.tax <- ncol(taxa)
-    lmer.out <- matrix(NA, n.tax, 6)
-    library.size <- apply(taxa,1, sum)
-    #print(n.tax)
-    for (i in 1:n.tax) {
-      #print(i)
-      taxon <- taxa[,i]
-      y <- as.numeric(taxon)
-      x <- as.numeric(unlist(bin.var))
-      cluster <- id.var
-      dat <- cbind.data.frame(y,x,cov.var,cluster)
-      
-      f <- formula(paste("y ~ x +", paste(colnames(cov.var), collapse = "+"), sep = ""))
-      
-      if(any(taxon == 0)) {
-        fit.zinb <- try(glmm.zinb(f, data = dat, random = ~1|cluster),silent = TRUE) # class(fit.zinb) == "zinbmm" "lme"
-        if(class(fit.zinb) == "try-error"){
-          out.nb <- c(NA, NA, NA, NA, NA, NA)
-        } else {
-          info <- fixed.zi(fit.zinb)
-          ci.lower <- intervals(fit.zinb, which = "fixed")$fixed[2,"lower"]
-          ci.upper <- intervals(fit.zinb, which = "fixed")$fixed[2,"upper"]
-          df = NA
-          out.nb <- c(summary(fit.zinb)$coefficients$fixed[2], info$dist[2,"Std.Error"], df, ci.lower, ci.upper, info$dist[2,"pvalue"])
-        }
-        
-      } else {
-        fit.nb <- try(glmm.nb(f, random = ~1|cluster, data = dat), silent = TRUE)
-        if(class(fit.nb) == "try-error"){
-          out.nb <- c(NA, NA, NA, NA, NA, NA)
-        } else {
-          info <- fixed.nb(fit.nb)
-          ci.lower <- intervals(fit.nb, which = "fixed")$fixed[2,"lower"]
-          ci.upper <- intervals(fit.nb, which = "fixed")$fixed[2,"upper"]
-          df = NA
-          out.nb <- c(summary(fit.nb)$coefficients$fixed[2], info$dist[2,"Std.Error"], df, ci.lower, ci.upper, info$dist[2,"pvalue"])
-        }
-      }
-      lmer.out[i,] <- out.nb
-    }
-    rownames(lmer.out) <- colnames(taxa)
-    lmer.out <- as.data.frame(lmer.out)
-    rownames(lmer.out) <- colnames(taxa)
-    colnames(lmer.out) <- c("Est", "Std Err", "DF", "Lower", "Upper", "P.value")
-    return(lmer.out)
-  }
-}
-
-all.taxa.con.glmm.nb <- function(con.var, id.var, taxa, multi.method = "BH", rarefy = FALSE) {
+all.taxa.con.glmm.nb <- function(con.var, id.var, taxa, library.size, multi.method = "BH") {
   tax.out <- list()
-  if(rarefy == FALSE){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.con.glmm.nb.func(con.var = con.var, id.var = id.var, taxa = taxa[[i]])  
-      count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
-  }else if(rarefy == TRUE){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.con.glmm.nb.rarefy.func(con.var = con.var, id.var = id.var, taxa = taxa[[i]])  
-      count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
+  for (i in 1:6) {
+    count.taxa.test.out <- taxa.con.glmm.nb.func(con.var = con.var, id.var = id.var, taxa = taxa[[i]], library.size)  
+    count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
+    tax.out[[i]] <- count.taxa.test.q.out
   }
   names(tax.out) <- c("phylum", "class", "order", "family", "genus", "species")
   return(tax.out)
 }
 
-taxa.con.glmm.nb.func <- function(con.var, id.var, taxa) {
+taxa.con.glmm.nb.func <- function(con.var, id.var, taxa, library.size) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     lmer.out <- matrix(NA, n.tax, 6)
-    library.size <- apply(taxa,1, sum)
-    #print(n.tax)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
       y <- as.numeric(taxon)
       x <- as.numeric(unlist(con.var))
       cluster <- id.var
       dat <- cbind.data.frame(y,x,cluster)
-      #print(i)
-      if(any(taxon == 0)) {
-        fit.zinb <- try(glmm.zinb(y ~ x + offset(log(library.size)), data = dat, random = ~1|cluster), silent = TRUE) # class(fit.zinb) == "zinbmm" "lme"
-        est <- tryCatch(summary(fit.zinb)$coefficients$fixed[2], error = function(err) NA)
-        info <- try(fixed.zi(fit.zinb), silent = TRUE)
-        std.err <- tryCatch(info$dist[2,"Std.Error"], error = function(err) NA)
-        p.val <- tryCatch(info$dist[2,"pvalue"], error = function(err) NA)
-        
-        ci.lower <- tryCatch(intervals(fit.zinb, which = "fixed")$fixed[2,"lower"], error = function(err) NA)
-        ci.upper <- tryCatch(intervals(fit.zinb, which = "fixed")$fixed[2,"upper"], error = function(err) NA)
-        df = NA
-        out.nb <- c(est, std.err, df, ci.lower, ci.upper, p.val)
-      } else {
+      
         fit.nb <- try(glmm.nb(y ~ x + offset(log(library.size)), data = dat, random = ~1|cluster), silent = TRUE)
-        est <- tryCatch(summary(fit.nb)$coefficients$fixed[2], error = function(err) NA)
-        info <- tryCatch(fixed.nb(fit.nb), error = function(err) NA)
-        std.err <- tryCatch(info$dist[2,"Std.Error"], error = function(err) NA)
-        p.val <- tryCatch(info$dist[2,"pvalue"], error = function(err) NA)
         
-        ci.lower <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"lower"], error = function(err) NA)
-        ci.upper <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"upper"], error = function(err) NA)
-        df = NA
-        out.nb <- c(est, std.err, df, ci.lower, ci.upper, p.val)
-      }
+        est <- tryCatch(summary(fit.nb)$tTable[2,1], error = function(err) NA)
+        std.err <- tryCatch(summary(fit.nb)$tTable[2,2], error = function(err) NA)
+        df <- tryCatch(summary(fit.nb)$tTable[2,3], error = function(err) NA)
+        ci <- tryCatch(c(est - qt(0.975, df = df)*std.err, est + qt(0.975, df = df)*std.err), error = function(err) c(NA,NA))
+        p.val <- tryCatch(summary(fit.nb)$tTable[2,5], error = function(err) NA)
+        
+        out.nb <- c(est, std.err, df, ci, p.val)
+      
       lmer.out[i,] <- out.nb
     }
     rownames(lmer.out) <- colnames(taxa)
@@ -1157,79 +852,22 @@ taxa.con.glmm.nb.func <- function(con.var, id.var, taxa) {
   }
 }
 
-taxa.con.glmm.nb.rarefy.func <- function(con.var, id.var, taxa) {
-  if(!is.null(taxa)){
-    n.tax <- ncol(taxa)
-    lmer.out <- matrix(NA, n.tax, 6)
-    library.size <- apply(taxa,1, sum)
-    #print(n.tax)
-    for (i in 1:n.tax) {
-      taxon <- taxa[,i]
-      y <- as.numeric(taxon)
-      x <- as.numeric(unlist(con.var))
-      cluster <- id.var
-      dat <- cbind.data.frame(y,x,cluster)
-      #print(i)
-      if(any(taxon == 0)) {
-        fit.zinb <- try(glmm.zinb(y ~ x, data = dat, random = ~1|cluster), silent = TRUE) # class(fit.zinb) == "zinbmm" "lme"
-        est <- tryCatch(summary(fit.zinb)$coefficients$fixed[2], error = function(err) NA)
-        info <- try(fixed.zi(fit.zinb), silent = TRUE)
-        std.err <- tryCatch(info$dist[2,"Std.Error"], error = function(err) NA)
-        p.val <- tryCatch(info$dist[2,"pvalue"], error = function(err) NA)
-        
-        ci.lower <- tryCatch(intervals(fit.zinb, which = "fixed")$fixed[2,"lower"], error = function(err) NA)
-        ci.upper <- tryCatch(intervals(fit.zinb, which = "fixed")$fixed[2,"upper"], error = function(err) NA)
-        df = NA
-        out.nb <- c(est, std.err, df, ci.lower, ci.upper, p.val)
-      } else {
-        fit.nb <- try(glmm.nb(y ~ x, data = dat, random = ~1|cluster), silent = TRUE)
-        est <- tryCatch(summary(fit.nb)$coefficients$fixed[2], error = function(err) NA)
-        info <- tryCatch(fixed.nb(fit.nb), error = function(err) NA)
-        std.err <- tryCatch(info$dist[2,"Std.Error"], error = function(err) NA)
-        p.val <- tryCatch(info$dist[2,"pvalue"], error = function(err) NA)
-        
-        ci.lower <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"lower"], error = function(err) NA)
-        ci.upper <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"upper"], error = function(err) NA)
-        df = NA
-        out.nb <- c(est, std.err, df, ci.lower, ci.upper, p.val)
-      }
-      lmer.out[i,] <- out.nb
-    }
-    rownames(lmer.out) <- colnames(taxa)
-    lmer.out <- as.data.frame(lmer.out)
-    rownames(lmer.out) <- colnames(taxa)
-    colnames(lmer.out) <- c("Est", "Std Err", "DF", "Lower", "Upper", "P.value")
-    return(lmer.out)
-  }
-}
-
-all.taxa.con.cov.glmm.nb <- function(con.var, id.var, cov.var, taxa, multi.method = "BH", rarefy = FALSE) {
+all.taxa.con.cov.glmm.nb <- function(con.var, id.var, cov.var, taxa, library.size, multi.method = "BH") {
   tax.out <- list()
-  if(rarefy == FALSE){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.con.cov.glmm.nb.func(con.var = con.var, id.var = id.var, cov.var = cov.var,taxa = taxa[[i]])
-      count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
-  } else if (rarefy == TRUE){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.con.cov.glmm.nb.rarefy.func(con.var = con.var, id.var = id.var, cov.var = cov.var,taxa = taxa[[i]])
-      count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
+  for (i in 1:6) {
+    count.taxa.test.out <- taxa.con.cov.glmm.nb.func(con.var = con.var, id.var = id.var, cov.var = cov.var,taxa = taxa[[i]], library.size)
+    count.taxa.test.q.out <- q.func(count.taxa.test.out, method = multi.method)
+    tax.out[[i]] <- count.taxa.test.q.out
   }
   names(tax.out) <- c("phylum", "class", "order", "family", "genus", "species")
   return(tax.out)
 }
 
-taxa.con.cov.glmm.nb.func <- function(con.var, id.var, cov.var, taxa) {
+taxa.con.cov.glmm.nb.func <- function(con.var, id.var, cov.var, taxa, library.size) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     lmer.out <- matrix(NA, n.tax, 6)
-    library.size <- apply(taxa,1, sum)
-    #print(n.tax)
     for (i in 1:n.tax) {
-      #print(i)
       taxon <- taxa[,i]
       y <- as.numeric(taxon)
       x <- as.numeric(unlist(con.var))
@@ -1238,82 +876,14 @@ taxa.con.cov.glmm.nb.func <- function(con.var, id.var, cov.var, taxa) {
       
       f <- formula(paste("y ~ x +", paste(colnames(cov.var), collapse = "+"), "+ offset(log(library.size))", sep = ""))
       
-      if(any(taxon == 0)) {
-        fit.zinb <- try(glmm.zinb(f, data = dat, random = ~1|cluster), silent = TRUE)
-        est <- tryCatch(summary(fit.zinb)$coefficients$fixed[2], error = function(err) NA)
-        info <- try(fixed.zi(fit.zinb), silent = TRUE)
-        std.err <- tryCatch(info$dist[2,"Std.Error"], error = function(err) NA)
-        p.val <- tryCatch(info$dist[2,"pvalue"], error = function(err) NA)
-        
-        ci.lower <- tryCatch(intervals(fit.zinb, which = "fixed")$fixed[2,"lower"], error = function(err) NA)
-        ci.upper <- tryCatch(intervals(fit.zinb, which = "fixed")$fixed[2,"upper"], error = function(err) NA)
-        df = NA
-        out.nb <- c(est, std.err, df, ci.lower, ci.upper, p.val)
-        
-      } else {
-        fit.nb <- try(glmm.nb(f, data = dat, random = ~1|cluster), silent = TRUE)
-        est <- tryCatch(summary(fit.nb)$coefficients$fixed[2], error = function(err) NA)
-        info <- tryCatch(fixed.nb(fit.nb), error = function(err) NA)
-        std.err <- tryCatch(info$dist[2,"Std.Error"], error = function(err) NA)
-        p.val <- tryCatch(info$dist[2,"pvalue"], error = function(err) NA)
-        
-        ci.lower <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"lower"], error = function(err) NA)
-        ci.upper <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"upper"], error = function(err) NA)
-        df = NA
-        out.nb <- c(est, std.err, df, ci.lower, ci.upper, p.val)
-        
-      }
-      lmer.out[i,] <- out.nb
-    }
-    rownames(lmer.out) <- colnames(taxa)
-    lmer.out <- as.data.frame(lmer.out)
-    rownames(lmer.out) <- colnames(taxa)
-    colnames(lmer.out) <- c("Est", "Std Err", "DF", "Lower", "Upper", "P.value")
-    return(lmer.out)
-  }
-}
-
-taxa.con.cov.glmm.nb.rarefy.func <- function(con.var, id.var, cov.var, taxa) {
-  if(!is.null(taxa)){
-    n.tax <- ncol(taxa)
-    lmer.out <- matrix(NA, n.tax, 6)
-    library.size <- apply(taxa,1, sum)
-    #print(n.tax)
-    for (i in 1:n.tax) {
-      #print(i)
-      taxon <- taxa[,i]
-      y <- as.numeric(taxon)
-      x <- as.numeric(unlist(con.var))
-      cluster <- id.var
-      dat <- cbind.data.frame(y,x,cov.var,cluster)
+      fit.nb <- try(glmm.nb(f, data = dat, random = ~1|cluster), silent = TRUE)
+      est <- tryCatch(summary(fit.nb)$tTable[2,1], error = function(err) NA)
+      std.err <- tryCatch(summary(fit.nb)$tTable[2,2], error = function(err) NA)
+      df <- tryCatch(summary(fit.nb)$tTable[2,3], error = function(err) NA)
+      ci <- tryCatch(c(est - qt(0.975, df = df)*std.err, est + qt(0.975, df = df)*std.err), error = function(err) c(NA,NA))
+      p.val <- tryCatch(summary(fit.nb)$tTable[2,5], error = function(err) NA)
       
-      f <- formula(paste("y ~ x +", paste(colnames(cov.var), collapse = "+"), sep = ""))
-      
-      if(any(taxon == 0)) {
-        fit.zinb <- try(glmm.zinb(f, data = dat, random = ~1|cluster), silent = TRUE)
-        est <- tryCatch(summary(fit.zinb)$coefficients$fixed[2], error = function(err) NA)
-        info <- try(fixed.zi(fit.zinb), silent = TRUE)
-        std.err <- tryCatch(info$dist[2,"Std.Error"], error = function(err) NA)
-        p.val <- tryCatch(info$dist[2,"pvalue"], error = function(err) NA)
-        
-        ci.lower <- tryCatch(intervals(fit.zinb, which = "fixed")$fixed[2,"lower"], error = function(err) NA)
-        ci.upper <- tryCatch(intervals(fit.zinb, which = "fixed")$fixed[2,"upper"], error = function(err) NA)
-        df = NA
-        out.nb <- c(est, std.err, df, ci.lower, ci.upper, p.val)
-        
-      } else {
-        fit.nb <- try(glmm.nb(f, data = dat, random = ~1|cluster), silent = TRUE)
-        est <- tryCatch(summary(fit.nb)$coefficients$fixed[2], error = function(err) NA)
-        info <- tryCatch(fixed.nb(fit.nb), error = function(err) NA)
-        std.err <- tryCatch(info$dist[2,"Std.Error"], error = function(err) NA)
-        p.val <- tryCatch(info$dist[2,"pvalue"], error = function(err) NA)
-        
-        ci.lower <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"lower"], error = function(err) NA)
-        ci.upper <- tryCatch(intervals(fit.nb, which = "fixed")$fixed[2,"upper"], error = function(err) NA)
-        df = NA
-        out.nb <- c(est, std.err, df, ci.lower, ci.upper, p.val)
-        
-      }
+      out.nb <- c(est, std.err, df, ci, p.val)
       lmer.out[i,] <- out.nb
     }
     rownames(lmer.out) <- colnames(taxa)
@@ -1343,22 +913,18 @@ taxa.bin.glmm.beta.func <- function(bin.var, id.var, taxa) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     beta.out <- matrix(NA, n.tax, 6)
-    print(n.tax)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
-      print(i)
       dat <- as.data.frame(cbind(bin.var, taxon, id.var))
       dat[,2] <- as.numeric(dat[,2])
       dat[,1] <- as.numeric(dat[,1])
       f <- formula(paste(colnames(dat)[2], " ~ ", colnames(dat)[1], "+ (1 | id.var)", sep = ""))
-      fit.beta <- try(glmmTMB(f, data = dat, family = beta_family()), silent = TRUE)                           # gives z value
+      fit.beta <- try(glmmTMB(f, data = dat, family = beta_family()), silent = TRUE)       
       if(class(fit.beta) != "try-error"){
         est <- summary(fit.beta)$coefficients$cond[2,1]
         std.err <- summary(fit.beta)$coefficients$cond[2,2]
         ci <- c(est + qnorm(c(0.025, 0.975))*std.err)
         out.beta <- c(summary(fit.beta)$coefficients$cond[2,c(1,2)], NA, ci, summary(fit.beta)$coefficients$cond[2,4])
-        #confint(fit.beta)[2,]
-        #out.beta <- tryCatch(c(summary(fit.beta)$coefficients$mean[2,c(1,2)], NA, ci, summary(fit.beta)$coefficients$mean[2,4]), error = function(err) c(rep(NA),6))
         
       } else {
         out.beta <- rep(NA, 6)
@@ -1389,10 +955,8 @@ taxa.bin.glmm.cov.beta.func <- function(bin.var, id.var, cov.var, taxa) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     beta.out <- matrix(NA, n.tax, 6)
-    print(n.tax)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
-      print(i)
       dat <- as.data.frame(cbind(bin.var, id.var, cov.var, taxon))
       f <- formula(paste(colnames(dat)[ncol(dat)], " ~ ", colnames(dat)[1], "+", paste(names(cov.var), collapse = "+"), "+ (1|id.var)", sep = ""))
       fit.beta <- try(glmmTMB(f, data = dat, family = beta_family()), silent = TRUE)
@@ -1401,9 +965,6 @@ taxa.bin.glmm.cov.beta.func <- function(bin.var, id.var, cov.var, taxa) {
         std.err <- summary(fit.beta)$coefficients$cond[2,2]
         ci <- c(est + qnorm(c(0.025, 0.975))*std.err)
         out.beta <- c(summary(fit.beta)$coefficients$cond[2,c(1,2)], NA, ci, summary(fit.beta)$coefficients$cond[2,4])
-        #confint(fit.beta)[2,]
-        #out.beta <- tryCatch(c(summary(fit.beta)$coefficients$mean[2,c(1,2)], NA, ci, summary(fit.beta)$coefficients$mean[2,4]), error = function(err) c(rep(NA),6))
-        
       } else {
         out.beta <- rep(NA, 6)
       }
@@ -1428,26 +989,21 @@ all.taxa.con.glmm.beta <- function(con.var, id.var, taxa, multi.method = "BH"){
 }
 
 taxa.con.glmm.beta.func <- function(con.var, id.var, taxa) {
-  if(!is.null(taxa)){
+  if (!is.null(taxa)){
     n.tax <- ncol(taxa)
     beta.out <- matrix(NA, n.tax, 6)
-    print(n.tax)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
-      print(i)
       dat <- as.data.frame(cbind(con.var, taxon, id.var))
       dat[,2] <- as.numeric(dat[,2])
       dat[,1] <- as.numeric(dat[,1])
       f <- formula(paste(colnames(dat)[2], " ~ ", colnames(dat)[1], "+ (1 | id.var)", sep = ""))
-      fit.beta <- try(glmmTMB(f, data = dat, family = beta_family()), silent = TRUE)                        # gives z value
-      if(class(fit.beta) != "try-error"){
+      fit.beta <- try(glmmTMB(f, data = dat, family = beta_family()), silent = TRUE)  
+      if (class(fit.beta) != "try-error"){
         est <- summary(fit.beta)$coefficients$cond[2,1]
         std.err <- summary(fit.beta)$coefficients$cond[2,2]
         ci <- c(est + qnorm(c(0.025, 0.975))*std.err)
         out.beta <- c(summary(fit.beta)$coefficients$cond[2,c(1,2)], NA, ci, summary(fit.beta)$coefficients$cond[2,4])
-        #confint(fit.beta)[2,]
-        #out.beta <- tryCatch(c(summary(fit.beta)$coefficients$mean[2,c(1,2)], NA, ci, summary(fit.beta)$coefficients$mean[2,4]), error = function(err) c(rep(NA),6))
-        
       } else {
         out.beta <- rep(NA, 6)
       }
@@ -1478,7 +1034,6 @@ taxa.con.glmm.cov.beta.func <- function(con.var, id.var, cov.var, taxa) {
     beta.out <- matrix(NA, n.tax, 6)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
-      print(i)
       dat <- as.data.frame(cbind(con.var, id.var, cov.var, taxon))
       f <- formula(paste(colnames(dat)[ncol(dat)], " ~ ", colnames(dat)[1], "+", paste(names(cov.var), collapse = "+"), "+ (1|id.var)", sep = ""))
       fit.beta <- try(glmmTMB(f, data = dat, family = beta_family()), silent = TRUE)
@@ -1487,7 +1042,6 @@ taxa.con.glmm.cov.beta.func <- function(con.var, id.var, cov.var, taxa) {
         std.err <- summary(fit.beta)$coefficients$cond[2,2]
         ci <- c(est + qnorm(c(0.025, 0.975))*std.err)
         out.beta <- c(summary(fit.beta)$coefficients$cond[2,c(1,2)], NA, ci, summary(fit.beta)$coefficients$cond[2,4])
-        
       } else {
         out.beta <- rep(NA, 6)
       }
@@ -1520,18 +1074,6 @@ p.value.0.1 <- function(x, round.x = 3) {
   ind.1 <- which(x == "1.000" | x == 1)
   x[ind.1] <- ">.999"
   return(x)
-}
-
-add.id <- function(sam.dat) {             ################ remove this later
-  
-  id <- numeric()
-  for (i in 1:30) {
-    id <- c(id, rep(i,5))
-  }
-  as.vector(id)
-  sam.dat <- cbind(sam.dat, id = as.vector(id))
-  
-  return(sam.dat)
 }
 
 clr.lmer.table <- function(all.taxa.bin.lmer.out) {

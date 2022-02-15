@@ -13,8 +13,8 @@ library(fossil)
 library(picante)
 library(entropart)
 
-rem.tax.d <- c("", "gut metagenome", "mouse gut metagenome")
-rem.tax.str.d <- c("uncultured", "Incertae", "unidentified", "unclassified", "unknown", "incertae sedis")
+rem.tax.d <- c("", "metagenome", "gut metagenome", "mouse gut metagenome")
+rem.tax.str.d <- c("uncultured", "incertae", "Incertae", "unidentified", "unclassified", "unknown")
 
 tax.tab.clean <- function(tax.tab, rem.tax = rem.tax.d, rem.tax.str = rem.tax.str.d, na.code = "NANANA") {
   tax.tab.c <- tax.tab
@@ -91,7 +91,7 @@ otu.tab.clean <- function(biom, lib.size.cut.off = 3000, mean.prop.cut.off = 2e-
   return(biom)  
 }
 
-biom.clean <- function(biom, kingdom = "Bacteria", tax.tab.c = TRUE, lib.size.cut.off = 3000, mean.prop.cut.off = 2e-05) {
+biom.clean <- function(biom, rem.tax = rem.tax.d, rem.tax.str = rem.tax.str.d, kingdom = "Bacteria", tax.tab.c = TRUE, lib.size.cut.off = 3000, mean.prop.cut.off = 2e-05) {
   
   tax.tab <- tax_table(biom)
   
@@ -131,7 +131,7 @@ biom.clean <- function(biom, kingdom = "Bacteria", tax.tab.c = TRUE, lib.size.cu
     tree <- phangorn::midpoint(tree)
   }
   if (tax.tab.c) {
-    tax.tab <- tax.tab.clean(tax.tab)
+    tax.tab <- tax.tab.clean(tax.tab, rem.tax = rem.tax, rem.tax.str = rem.tax.str)
   }
   biom <- merge_phyloseq(otu.tab, tax.tab, tree, sam.dat)
   
@@ -140,8 +140,8 @@ biom.clean <- function(biom, kingdom = "Bacteria", tax.tab.c = TRUE, lib.size.cu
   return(biom)  
 }
 
-num.tax.rank <- function(tax.tab, na.code = "NANANA") {
-  tax.tab.cleaned <- tax.tab.clean(tax.tab, na.code = na.code)
+num.tax.rank <- function(tax.tab, rem.tax = rem.tax.d, rem.tax.str = rem.tax.str.d, na.code = "NANANA") {
+  tax.tab.cleaned <- tax.tab.clean(tax.tab, rem.tax, rem.tax.str, na.code = na.code)
   num.taxa <- c()
   for (i in 1:6) {
     taxa <- unique(tax.tab.cleaned[,i+1])
@@ -201,7 +201,6 @@ rarefy.func <- function(biom, cut.off, multi.rarefy = FALSE) {
 ###################
 # Alpha diversity #
 ###################
-
 alpha.pe.pqe.func <- function(x, tree, norm = TRUE) {
   ind <- which(x != 0)
   s.tree <- prune_taxa(names(x[ind]), tree)
@@ -308,6 +307,7 @@ alpha.bin.hist <- function(bin.var, alpha.div, test.out, mult.test.cor = TRUE) {
         xlab.v = paste("q:", p.value.0.1(qvs[i]), sep="")
       }
     }
+    print(levels(bin.var))
     boxplot(alpha.div[,i] ~ bin.var, xlab=xlab.v, ylab=alpha.div.ind[i], names = substr(levels(bin.var), 1, 8), notch = TRUE, col=c(rgb(0,1,0,0.5), rgb(1,0,0,0.5)))
   }
 }
@@ -399,11 +399,12 @@ cov.func <- function(sam.dat, mon.sin.rev.bin.con, sel.pri.var) {
   return(colnames(sam.dat)[!(ind.pri | ind.mon.sin.rev)])
 }
 
-
 alpha.bin.cat.func <- function(sam.dat, sel.bin.var) {
-  bin.var <- unlist(sam.dat[,sel.bin.var])
-  bin.var.no.na <- bin.var[!is.na(bin.var)]
-  bin.cat <- unique(bin.var.no.na)
+  # bin.var <- unlist(sam.dat[,sel.bin.var])
+  # bin.var.no.na <- bin.var[!is.na(bin.var)]
+  # bin.cat <- unique(bin.var.no.na)
+  bin.cat <- levels(as.factor(unlist(sam.dat[,sel.bin.var])))
+  
   return(bin.cat)
 }
 
@@ -448,11 +449,13 @@ alpha.bin.sum.func <- function(bin.var, alpha.div) {
   n.alpha <- ncol(alpha.div)
   ref.sum <- matrix(NA, n.alpha, 7)
   com.sum <- matrix(NA, n.alpha, 7)
+  print(1)
   for (i in 1:n.alpha) {
     ind.alpha <- alpha.div[,i]
     sum.out <- tapply(ind.alpha, bin.var, alpha.ind.sum.func)
     ref.sum[i,] <- sum.out[[1]]
     com.sum[i,] <- sum.out[[2]]
+    print(2)
   }
   rownames(ref.sum) <- colnames(alpha.div)
   colnames(ref.sum) <- c("N", "Mean", "Minimum", "1st quartile", "Median", "3rd quartile", "Maximum")
@@ -517,7 +520,6 @@ alpha.forest.plot <- function(out, mult.test.cor = TRUE) {
                txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.7), gpar(fontfamily="", cex=0.7)),
                               ticks=gpar(fontfamily="", cex=0.7),
                               xlab=gpar(fontfamily="", cex=0.7)))
-    #plot.taxa <- grid.grab()
   }else{
     text.tab.all <- as.matrix(rbind(c("Alpha Diversity", "Est", "SE", "DF", "P-value"), 
                                     cbind(rownames(out), format(round(out[, c(1, 2)], digits = 3), nsmall = 3), out[, 3], p.value.0.1(out[,6]))))
@@ -529,7 +531,6 @@ alpha.forest.plot <- function(out, mult.test.cor = TRUE) {
                txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.7), gpar(fontfamily="", cex=0.7)),
                               ticks=gpar(fontfamily="", cex=0.7),
                               xlab=gpar(fontfamily="", cex=0.7)))
-    #plot.taxa <- grid.grab()
   }
 }
 
@@ -563,9 +564,6 @@ alpha.logit.reg.coef.bin.cov.func <- function(bin.var, cov.var, alpha.div, scale
     std.err <- summary(fit.logit)$coefficients[2,2]
     df <- summary(fit.logit)$df[2]
     ci <- c(est - qt(0.975, df)*std.err, est + qt(0.975, df)*std.err)
-    
-    #out.logit <- c(exp(est), std.err, df, ci, summary(fit.logit)$coefficients[2,4])
-    
     out.logit <- c(est, std.err, df, ci, summary(fit.logit)$coefficients[2,4])
     logit.out[i,] <- out.logit
   }
@@ -596,9 +594,6 @@ alpha.logit.bin.cov.func <- function(bin.var, cov.var, alpha.div, scale = TRUE) 
     fit.logit <- glm(logit.f, data = d, family = "binomial")
     est <- summary(fit.logit)$coefficients[2,1]
     std.err <- summary(fit.logit)$coefficients[2,2]
-    
-    #print(get.or.se(fit.logit)[2])
-    #print(broom::tidy(fit.logit)$estimate)
     or.se <- sqrt(exp(est)^2*diag(vcov(fit.logit)))[2]
     
     df <- summary(fit.logit)$df[2]
@@ -627,7 +622,6 @@ alpha.logit.forest.plot <- function(out, mult.test.cor = TRUE) {
                txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.7), gpar(fontfamily="", cex=0.7)),
                               ticks=gpar(fontfamily="", cex=0.7),
                               xlab=gpar(fontfamily="", cex=0.7)))
-    #plot.taxa <- grid.grab()
   }else{
     text.tab.all <- as.matrix(rbind(c("Alpha Diversity", "OR", "SE", "DF", "P-value"), 
                                     cbind(rownames(out), format(round(out[, c(1, 2)], digits = 3), nsmall = 3), out[, 3], p.value.0.1(out[,6]))))
@@ -639,7 +633,6 @@ alpha.logit.forest.plot <- function(out, mult.test.cor = TRUE) {
                txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.7), gpar(fontfamily="", cex=0.7)),
                               ticks=gpar(fontfamily="", cex=0.7),
                               xlab=gpar(fontfamily="", cex=0.7)))
-    #plot.taxa <- grid.grab()
   }
 }
 

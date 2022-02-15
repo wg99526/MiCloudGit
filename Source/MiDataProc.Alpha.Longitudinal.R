@@ -82,13 +82,6 @@ alpha.bin.var.func <- function(sam.dat) {
   return(var.names)
 }
 
-alpha.bin.cat.func <- function(sam.dat, sel.bin.var) {
-  bin.var <- unlist(sam.dat[,sel.bin.var])
-  bin.var.no.na <- bin.var[!is.na(bin.var)]
-  bin.cat <- unique(bin.var.no.na)
-  return(bin.cat)
-}
-
 is.binary <- function(sam.dat, sel.bin.var) {
   bin.var <- unlist(sam.dat[,sel.bin.var])
   bin.var.no.na <- bin.var[!is.na(bin.var)]
@@ -98,20 +91,6 @@ is.binary <- function(sam.dat, sel.bin.var) {
   }
   return(TRUE)
 }
-
-# is.bin.con.pri <- function(sam.dat, mon.rev.bin.con, sel.pri.var) {
-#   ind <- which(colnames(sam.dat) == sel.pri.var)
-#   if(length(ind) != 0){
-#     if (mon.rev.bin.con$is.bin[ind]) {
-#       out <- "Binary"
-#     } else {
-#       out <- "Continuous"
-#     }
-#   }else {
-#     out = "Neither"
-#   }
-#   return(out)
-# }
 
 alpha.bin.cat.ref.ori.func <- function(sam.dat, sel.bin.var = "ecig_status") {
   return(levels(as.factor(as.data.frame(as.matrix(sam.dat))[,sel.bin.var])))
@@ -211,7 +190,6 @@ alpha.forest.lmer.plot <- function(out, mult.test.cor = TRUE) {
                txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.7), gpar(fontfamily="", cex=0.7)),
                               ticks=gpar(fontfamily="", cex=0.7),
                               xlab=gpar(fontfamily="", cex=0.7)))
-    #plot.taxa <- grid.grab()
   }else{
     text.tab.all <- as.matrix(rbind(c("Alpha Diversity", "Est", "SE", "P-value"), 
                                     cbind(rownames(out), format(round(out[, c(1, 2)], digits = 3), nsmall = 3), p.value.0.1(out[,6]))))
@@ -223,7 +201,6 @@ alpha.forest.lmer.plot <- function(out, mult.test.cor = TRUE) {
                txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.7), gpar(fontfamily="", cex=0.7)),
                               ticks=gpar(fontfamily="", cex=0.7),
                               xlab=gpar(fontfamily="", cex=0.7)))
-    #plot.taxa <- grid.grab()
   }
 }
 
@@ -240,7 +217,6 @@ alpha.forest.lmer.or.plot <- function(out, mult.test.cor = TRUE) {
                txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.7), gpar(fontfamily="", cex=0.7)),
                               ticks=gpar(fontfamily="", cex=0.7),
                               xlab=gpar(fontfamily="", cex=0.7)))
-    #plot.taxa <- grid.grab()
   }
   else{
     text.tab.all <- as.matrix(rbind(c("Alpha Diversity", "OR", "SE", "P-value"), 
@@ -253,7 +229,6 @@ alpha.forest.lmer.or.plot <- function(out, mult.test.cor = TRUE) {
                txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.7), gpar(fontfamily="", cex=0.7)),
                               ticks=gpar(fontfamily="", cex=0.7),
                               xlab=gpar(fontfamily="", cex=0.7)))
-    #plot.taxa <- grid.grab()
   }
 }
 
@@ -446,47 +421,6 @@ alpha.logit.reg.coef.bin.cov.glmm.b.func <- function(bin.var, id.var, cov.var, a
   return(logit.out)
 }
 
-# alpha.logit.bin.cov.gee.func <- function(bin.var, id.var, cov.var, alpha.div, scale = TRUE) {
-#   
-#   n.cov <- ncol(cov.var)
-#   n.alpha <- ncol(alpha.div)
-#   alpha.ind <- colnames(alpha.div)
-#   d <- as.data.frame(cbind(bin.var, cov.var, alpha.div, id.var))
-#   
-#   logit.out <- matrix(NA, n.alpha, 6)
-#   
-#   for (i in 1:n.alpha) {
-#     if (scale) {
-#       f <- formula(paste(colnames(bin.var), "~", "scale(", alpha.ind[i], ")", "+", paste(colnames(cov.var), collapse = "+")))
-#     }
-#     if (!scale) {
-#       f <- formula(paste(colnames(bin.var), "~",  alpha.ind[i], "+", paste(colnames(cov.var), collapse = "+")))
-#     }
-#     fit <- geeglm(f, id = as.factor(id), data = d, corstr="exchangeable", family = "binomial"(link = "logit"))
-#     
-#     est <- summary(fit)$coefficients[2,"Estimate"]  
-#     se <- summary(fit)$coefficients[2,"Std.err"]
-#     ci <- exp(est + qnorm(c(0.025, 0.975))*se)
-#     wald <- round(summary(fit)$coefficients[2,"Wald"], digits = 3)
-#     pvs <- summary(fit)$coefficients[2,4]
-#     
-#     # or = exp(t$estimate[c(1,2)])
-#     # var.diag = diag(vcov(model))
-#     # or.se = sqrt(or^2 * var.diag)
-#     
-#     #print(sqrt(exp(broom::tidy(fit)$estimate)^2 * diag(vcov(fit))))
-#     #print(sqrt(exp(summary(fit)$coefficient[,1])^2 *diag(vcov(fit))))
-#     or.se <- sqrt(exp(summary(fit)$coefficient[,1])^2 *diag(vcov(fit)))[2]
-#     out.logit <-c(exp(est), or.se, wald, ci, pvs)
-#     logit.out[i,] <- out.logit
-#   }
-#   logit.out <- as.data.frame(logit.out)
-#   rownames(logit.out) <- colnames(alpha.div)
-#   colnames(logit.out) <- c("OR", "Std Err", "Wald", "Lower", "Upper", "P.value")
-#   
-#   return(logit.out)
-# }
-
 alpha.logit.bin.cov.glmm.b.func <- function(bin.var, id.var, cov.var, alpha.div, scale = TRUE) {
   
   n.cov <- ncol(cov.var)
@@ -510,35 +444,11 @@ alpha.logit.bin.cov.glmm.b.func <- function(bin.var, id.var, cov.var, alpha.div,
     wald <- tryCatch(round(summary(fit)$coefficients[2,"Wald"], digits = 3), error = function(err) NA)
     pvs <- tryCatch(summary(fit)$coefficients[2,4], error = function(err) NA)
     
-    # or = exp(t$estimate[c(1,2)])
-    # var.diag = diag(vcov(model))
-    # or.se = sqrt(or^2 * var.diag)
-    
-    #print(sqrt(exp(broom::tidy(fit)$estimate)^2 * diag(vcov(fit))))
-    #print(sqrt(exp(summary(fit)$coefficient[,1])^2 *diag(vcov(fit))))
     or.se <- tryCatch(sqrt(exp(summary(fit)$coefficient[,1])^2 *diag(vcov(fit)))[2], error = function(err) NA)
     out.logit <-c(exp(est), or.se, wald, ci, pvs)
     logit.out[i,] <- out.logit
   }
-  
-  # n.tax <- ncol()
-  # lmer.out <- matrix(NA, n.tax, 6)
-  # for (i in 1:n.tax) {
-  #   taxon <- taxa[,i]
-  #   dat <- as.data.frame(cbind(bin.var, taxon, id.var, cov.var))
-  #   f <- formula(paste(colnames(dat)[1], " ~ ", colnames(dat)[2], paste(colnames(cov.var), collapse = "+"), "+ (1|", colnames(dat)[3], ")", sep = ""))
-  #   
-  #   fit <- try(glmer(f, data = dat, family = "binomial"(link = "logit")), silent = TRUE)
-  #   est <- tryCatch(summary(fit)$coefficients[2,"Estimate"], error = function(err) NA)
-  #   se <- tryCatch(summary(fit)$coefficients[2,"Std. Error"], error = function(err) NA)
-  #   ci <- tryCatch(est + qnorm(c(0.025, 0.975))*se, error = function(err) c(NA,NA))
-  #   df <- NA
-  #   pvs <- tryCatch(summary(fit)$coefficients[2,4], error = function(err) NA)
-  #   
-  #   out.logit <-c(est, se, df, ci, pvs)
-  #   lmer.out[i,] <- out.logit
-  #   
-  # }
+
   lmer.out <- as.data.frame(lmer.out)
   rownames(lmer.out) <- colnames(taxa)
   colnames(lmer.out) <- c("Est", "Std Err", "DF", "Lower", "Upper", "P.value")
@@ -614,7 +524,6 @@ alpha.lmer.con.id.cov.func <- function(con.var, cov.var, id.var, alpha.div, scal
     if (!scale) {
       f <- formula(paste(alpha.ind[i], "~", colnames(con.var), "+", paste(colnames(cov.var), collapse = "+") , "+", "(1 | ", paste(colnames(id.var)), ")"))
     }
-    #print(f)
     fit <- try(lmer(f, data = d), silent = TRUE)
     est.se.df <- tryCatch(summary(fit)$coefficients[2,c(1,2,3)], error = function(err) c(NA,NA,NA))
     ci <- tryCatch(confint(fit)[4,], error = function(err) c(NA,NA))

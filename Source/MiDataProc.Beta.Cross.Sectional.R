@@ -30,13 +30,12 @@ library(proxy)
 #####################
 
 beta.bin.cat.func <- function(sam.dat, sel.bin.var) {
-  bin.var <- unlist(sam.dat[,sel.bin.var])
-  bin.var.no.na <- bin.var[!is.na(bin.var)]
-  bin.cat <- unique(bin.var.no.na)
+  bin.cat <- levels(as.factor(unlist(sam.dat[,sel.bin.var])))
   return(bin.cat)
 }
 
 beta.bin.cat.ref.ori.func <- function(sam.dat, sel.bin.var = "ecig_status") {
+  
   return(levels(as.factor(as.data.frame(as.matrix(sam.dat))[,sel.bin.var])))
 }
 
@@ -53,6 +52,7 @@ beta.bin.cat.ref.func <- function(sel.bin.var, sel.ref, sel.com, sam.dat, Ds.Ks)
   for (i in 1:length(Ks)) {
     Ks[[i]] <- Ks[[i]][c(ind.ref, ind.com), c(ind.ref, ind.com)]
   }
+  
   return(list(bin.var = bin.var, Ds = Ds, Ks = Ks))
 }
 
@@ -61,14 +61,8 @@ beta.bin.cat.recode.func <- function(sam.dat, sel.bin.var = "ecig_status", ori.c
   ind.com <- which(sam.dat[,sel.bin.var] == ori.cat[2])
   sam.dat[ind.ref,sel.bin.var] <- rename.ref
   sam.dat[ind.com,sel.bin.var] <- rename.com
+  
   return(sam.dat)
-}
-
-beta.bin.cat.func <- function(sam.dat, sel.bin.var) {
-  bin.var <- unlist(sam.dat[,sel.bin.var])
-  bin.var.no.na <- bin.var[!is.na(bin.var)]
-  bin.cat <- unique(bin.var.no.na)
-  return(bin.cat)
 }
 
 ##################
@@ -105,13 +99,6 @@ Ds.Ks.func <- function(rare.biom, biom.after.qc) {
   )
 }
 
-beta.bin.cat.func <- function(sam.dat, sel.bin.var) {
-  bin.var <- unlist(sam.dat[,sel.bin.var])
-  bin.var.no.na <- bin.var[!is.na(bin.var)]
-  bin.cat <- unique(bin.var.no.na)
-  return(bin.cat)
-}
-
 beta.bin.cov.cat.ref.func <- function(sel.bin.var, sel.ref, sel.com, sel.cov.var, sam.dat, Ds.Ks) {  
   bin.var <- unlist(sam.dat[,sel.bin.var])
   ind.ref <- which(bin.var == sel.ref)
@@ -144,6 +131,7 @@ beta.con.recode.func <- function(sam.dat, sel.con.var, rename.con.var, Ds.Ks) {
   for (i in 1:length(Ks)) {
     Ks[[i]] <- Ks[[i]][ind.nona, ind.nona]
   }
+  
   return(list(con.var = con.var, Ds = Ds, Ks = Ks))
 }
 
@@ -161,6 +149,7 @@ beta.con.cov.recode.func <- function(sam.dat, sel.con.var, sel.cov.var, rename.c
   for (i in 1:length(Ks)) {
     Ks[[i]] <- Ks[[i]][ind.nona, ind.nona]
   }
+  
   return(list(con.var = con.var, cov.var = cov.var, Ds = Ds, Ks = Ks))
 }
 
@@ -174,6 +163,10 @@ mirkat.bin <- function(beta.bin.out) {
   set.seed(487)
   out <- MiRKAT(y = as.numeric(beta.bin.out$bin.var)-1, X = NULL, Ks = beta.bin.out$Ks, out_type = "D", nperm = 1000)
   
+  return(out)
+}
+
+mirkat.bin.plot <- function(out, beta.bin.out) {
   par(mfrow = c(3, 2))
   for (i in 1:length(beta.bin.out$Ds)) {
     if (out$p_values[i] < 0.05) {
@@ -184,19 +177,23 @@ mirkat.bin <- function(beta.bin.out) {
     }
     mod <- betadisper(as.dist(beta.bin.out$Ds[[i]]), beta.bin.out$bin.var)
     plot(mod, ellipse = TRUE, hull = FALSE, main = names(beta.bin.out$Ds)[i], xlab="PC 1", ylab="PC 2",
-         sub = sub.tit, col = c("blue2", "red2"), cex=1.5)
+         sub=NA, col = c("blue2", "red2"), mgp=c(2.5,1,0), cex=1.7, label.cex=1.3, cex.lab=1.2, cex.main=1.7)
+    mtext(sub.tit, side=1, line=3.8, cex=1.0)
   }
   
   plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '')
-  legend("center", title = NULL, legend = levels(beta.bin.out$bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.5)
-  legend("bottom", paste("Omnibus MiRKAT: ", p.value.0.1(out$omnibus_p), sep=""), bty = "n", cex=1.5)
-  return(out)
+  legend("center", title = NULL, legend = levels(beta.bin.out$bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.6)
+  legend("bottom", paste("Omnibus MiRKAT: ", p.value.0.1(out$omnibus_p), sep=""), bty = "n", cex=1.6)
 }
 
 mirkat.bin.cov <- function(beta.bin.cov.out) {
   set.seed(487)
   out <- MiRKAT(y = as.numeric(beta.bin.cov.out$bin.var)-1, X = as.matrix(beta.bin.cov.out$cov.var), Ks = beta.bin.cov.out$Ks, out_type = "D", nperm = 1000)
   
+  return(out)
+}
+
+mirkat.bin.cov.plot <- function(out, beta.bin.cov.out) {
   par(mfrow = c(3, 2))
   for (i in 1:length(beta.bin.cov.out$Ds)) {
     if (out$p_values[i] < 0.05) {
@@ -207,19 +204,23 @@ mirkat.bin.cov <- function(beta.bin.cov.out) {
     }
     mod <- betadisper(as.dist(beta.bin.cov.out$Ds[[i]]), beta.bin.cov.out$bin.var)
     plot(mod, ellipse = TRUE, hull = FALSE, main = names(beta.bin.cov.out$Ds)[i], xlab="PC 1", ylab="PC 2",
-         sub = sub.tit, col = c("blue2", "red2"), cex=1.5)
+         sub=NA, col = c("blue2", "red2"), mgp=c(2.5,1,0), cex=1.7, label.cex=1.3, cex.lab=1.2, cex.main=1.7)
+    mtext(sub.tit, side=1, line=3.8, cex=1.0)
   }
   
   plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '')
-  legend("center", title = NULL, legend = levels(beta.bin.cov.out$bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.5)
-  legend("bottom", paste("Omnibus MiRKAT: ", p.value.0.1(out$omnibus_p), sep=""), bty = "n", cex=1.5)
-  return(out)
+  legend("center", title = NULL, legend = levels(beta.bin.cov.out$bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.6)
+  legend("bottom", paste("Omnibus MiRKAT: ", p.value.0.1(out$omnibus_p), sep=""), bty = "n", cex=1.6)
 }
 
 mirkat.con <- function(beta.con.out) {
   set.seed(487)
   out <- MiRKAT(y = as.numeric(unlist(beta.con.out$con.var)), X = NULL,  Ks = beta.con.out$Ks, out_type = "C", nperm = 1000)
-  #print(out)
+  
+  return(out)
+}
+
+mirkat.con.plot <- function(out, beta.con.out) {
   par(mfrow = c(3, 2))
   for (i in 1:length(beta.con.out$Ds)) {
     if (out$p_values[i] < 0.05) {
@@ -233,25 +234,29 @@ mirkat.con <- function(beta.con.out) {
     bin.var <- rep(NA, length(con.var))
     ind.gr <- which(con.var >= con.var.med)
     ind.sm <- which(con.var < con.var.med)
-    bin.var[ind.gr] <- paste(names(beta.con.out$con.var), ">=", con.var.med)
-    bin.var[ind.sm] <- paste(names(beta.con.out$con.var), "<", con.var.med)
+    bin.var[ind.gr] <- paste(names(beta.con.out$con.var), ">=", round(con.var.med,2))
+    bin.var[ind.sm] <- paste(names(beta.con.out$con.var), "<", round(con.var.med,2))
     bin.var <- factor(bin.var)
     
     mod <- betadisper(as.dist(beta.con.out$Ds[[i]]), bin.var)
     plot(mod, ellipse = TRUE, hull = FALSE, main = names(beta.con.out$Ds)[i], xlab="PC 1", ylab="PC 2",
-         sub = sub.tit, col = c("blue2", "red2"), cex=1.5)
+         sub=NA, col = c("blue2", "red2"), mgp=c(2.5,1,0), cex=1.7, label.cex=1.3, cex.lab=1.2, cex.main=1.7)
+    mtext(sub.tit, side=1, line=3.8, cex=1.0)
   }
   
   plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '')
-  legend("center", title = NULL, legend = levels(bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.5)
-  legend("bottom", paste("Omnibus MiRKAT: ", p.value.0.1(out$omnibus_p), sep=""), bty = "n", cex=1.5)
-  return(out)
+  legend("center", title = NULL, legend = levels(bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.6)
+  legend("bottom", paste("Omnibus MiRKAT: ", p.value.0.1(out$omnibus_p), sep=""), bty = "n", cex=1.6)
 }
 
 mirkat.con.cov <- function(beta.con.cov.out) {
   set.seed(487)
   out <- MiRKAT(y = as.numeric(unlist(beta.con.cov.out$con.var)), X = as.matrix(beta.con.cov.out$cov.var),  Ks = beta.con.cov.out$Ks, out_type = "C", nperm = 1000)
   
+  return(out)
+}
+
+mirkat.con.cov.plot <- function(out, beta.con.cov.out) {
   par(mfrow = c(3, 2))
   for (i in 1:length(beta.con.cov.out$Ds)) {
     if (out$p_values[i] < 0.05) {
@@ -265,19 +270,19 @@ mirkat.con.cov <- function(beta.con.cov.out) {
     bin.var <- rep(NA, length(con.var))
     ind.gr <- which(con.var >= con.var.med)
     ind.sm <- which(con.var < con.var.med)
-    bin.var[ind.gr] <- paste(names(beta.con.cov.out$con.var), ">=", con.var.med)
-    bin.var[ind.sm] <- paste(names(beta.con.cov.out$con.var), "<", con.var.med)
+    bin.var[ind.gr] <- paste(names(beta.con.cov.out$con.var), ">=", round(con.var.med,2))
+    bin.var[ind.sm] <- paste(names(beta.con.cov.out$con.var), "<", round(con.var.med,2))
     bin.var <- factor(bin.var)
     
     mod <- betadisper(as.dist(beta.con.cov.out$Ds[[i]]), bin.var)
     plot(mod, ellipse = TRUE, hull = FALSE, main = names(beta.con.cov.out$Ds)[i], xlab="PC 1", ylab="PC 2",
-         sub = sub.tit, col = c("blue2", "red2"), cex=1.5)
+         sub=NA, col = c("blue2", "red2"), mgp=c(2.5,1,0), cex=1.7, label.cex=1.3, cex.lab=1.2, cex.main=1.7)
+    mtext(sub.tit, side=1, line=3.8, cex=1.0)
   }
   
   plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '')
-  legend("center", title = NULL, legend = levels(bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.5)
-  legend("bottom", paste("Omnibus MiRKAT: ", p.value.0.1(out$omnibus_p), sep=""), bty = "n", cex=1.5)
-  return(out)
+  legend("center", title = NULL, legend = levels(bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.6)
+  legend("bottom", paste("Omnibus MiRKAT: ", p.value.0.1(out$omnibus_p), sep=""), bty = "n", cex=1.6)
 }
 
 ###################
@@ -286,6 +291,7 @@ mirkat.con.cov <- function(beta.con.cov.out) {
 
 q.func <- function(out, method = c("BH", "BY")) {
   Q.value <- p.adjust(out$P.value, method = method)
+  
   return(cbind(out, Q.value))
 }
 
@@ -295,5 +301,6 @@ p.value.0.1 <- function(x, round.x = 3) {
   x[ind.0] <- "<.001"
   ind.1 <- which(x == "1.000" | x == 1)
   x[ind.1] <- ">.999"
+  
   return(x)
 }

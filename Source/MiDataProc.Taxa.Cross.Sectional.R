@@ -122,7 +122,7 @@ tax.trans <- function(otu.tab, tax.tab, rare.otu.tab, rare.tax.tab, sub.com = TR
 ##########################
 
 taxa.ind.sum.func <- function(x) {
-  sum.out <- c(length(x), mean(x), quantile(x))
+  sum.out <- c(length(x), mean(x, na.rm = TRUE), quantile(x, na.rm = TRUE))
   names(sum.out) <-  c("N", "Mean", "Minimum", "1st quartile", "Median", "3rd quartile", "Maximum")
   return(sum.out)
 }
@@ -253,9 +253,7 @@ taxa.bin.var.func <- function(sam.dat) {
 }
 
 taxa.bin.cat.func <- function(sam.dat, sel.bin.var) {
-  bin.var <- unlist(sam.dat[,sel.bin.var])
-  bin.var.no.na <- bin.var[!is.na(bin.var)]
-  bin.cat <- unique(bin.var.no.na)
+  bin.cat <- levels(as.factor(unlist(sam.dat[,sel.bin.var])))
   if (length(bin.cat) != 2) {
     stop(paste(sel.bin.var, " is not binary", sep = ""))
   }
@@ -352,7 +350,7 @@ taxa.bin.t.test <- function(bin.var, taxa) {
     out <- matrix(NA, n.taxa, 6)
     for (i in 1:n.taxa) {
       fit <- t.test(taxa[,i] ~ bin.var)
-      out[i,] <- c(fit$statistic, fit$stderr, fit$parameter, fit$conf.int, fit$p.value)   
+      out[i,] <- c(-fit$statistic, fit$stderr, fit$parameter, -fit$conf.int[2], -fit$conf.int[1], fit$p.value)   
     }
     out <- as.data.frame(out)
     rownames(out) <- colnames(taxa)
@@ -405,25 +403,17 @@ taxa.wilcox.test.est.func <- function(bin.var, taxa, sel.ref, sel.com, q.out) {
   
   taxa.added <- list()
   for(i in 1:6) {
-    if(is.null(taxa[[i]])){
-      # print(is.null(taxa[[i]]))
-      # q.out[[i]] <- NULL
-      
-    }else{
+    if(!is.null(taxa[[i]])){
       n.tax <- length(taxa[[i]])
-      
       med.diff <- numeric()
-      
       for(j in 1:n.tax) {  
         taxon <- taxa[[i]][,j]
-        med.ref <- median(taxon[ind.ref])
-        med.com <- median(taxon[ind.com])
-        med.diff[j] <- med.ref - med.com
+        med.ref <- median(taxon[ind.ref], na.rm = TRUE)
+        med.com <- median(taxon[ind.com], na.rm = TRUE)
+        med.diff[j] <- med.com - med.ref
       }
-      #print(q.out[[i]])
       q.out[[i]] <- cbind(Est = med.diff, q.out[[i]])
     }
-    
   }
   return(q.out)
 }
@@ -556,10 +546,10 @@ taxa.bin.lm.united.func <- function(bin.var, taxa) {
   return(lm.test)
 }
 
-all.taxa.bin.glm.nb <- function(bin.var, taxa, multi.method = "BH") {
+all.taxa.bin.glm.nb <- function(bin.var, taxa, library.size, multi.method = "BH") {
   tax.out <- list()
   for (i in 1:6) {
-    count.taxa.test.out <- taxa.bin.glm.nb.func(bin.var, taxa[[i]])
+    count.taxa.test.out <- taxa.bin.glm.nb.func(bin.var, taxa[[i]], library.size)
     count.taxa.test.q.out <- bin.q.func(count.taxa.test.out, method = multi.method)
     tax.out[[i]] <-  count.taxa.test.q.out
   }
@@ -567,28 +557,21 @@ all.taxa.bin.glm.nb <- function(bin.var, taxa, multi.method = "BH") {
   return(tax.out)
 }
 
-taxa.bin.glm.nb.func <- function(bin.var, taxa) {
+taxa.bin.glm.nb.func <- function(bin.var, taxa, library.size) {
   n.tax <- ncol(taxa)
   lmer.out <- matrix(NA, n.tax, 6)
-  library.size <- apply(taxa,1, sum)
-  print(n.tax)
   for (i in 1:n.tax) {
     taxon <- taxa[,i]
-    print(i)
     dat <- as.data.frame(cbind(bin.var, taxon))
-    dat[,2] <- as.numeric(dat[,2])
-    dat[,1] <- as.numeric(dat[,1])
     f <- formula(paste(colnames(dat)[2], " ~ ", colnames(dat)[1], "+ offset(log(library.size))", sep = ""))
-    #f <- formula(paste(colnames(dat)[2], " ~ ", colnames(dat)[1], sep = ""))
-    fit <- try(glm.nb(f, data = dat), silent = TRUE)
     
+    fit <- try(glm.nb(f, data = dat), silent = TRUE)
     est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
     std.err <- tryCatch(summary(fit)$coefficients[2,2], error = function(err) NA)
     DF <- NA
     ci <- c(est - qnorm(0.975)*std.err, est + qnorm(0.975)*std.err)
     p.val <- tryCatch(summary(fit)$coefficients[2,4], error = function(err) NA)
     out <- c(est, std.err, DF, ci, p.val)
-    
     lmer.out[i,] <- out
   }
   lmer.out <- as.data.frame(lmer.out)
@@ -725,29 +708,22 @@ all.taxa.bin.beta <- function(bin.var, taxa, multi.method = "BH"){
 taxa.bin.beta.func <- function(bin.var, taxa) {
   n.tax <- ncol(taxa)
   beta.out <- matrix(NA, n.tax, 6)
-  print(n.tax)
   for (i in 1:n.tax) {
     taxon <- taxa[,i]
-    print(i)
     dat <- as.data.frame(cbind(bin.var, taxon))
     dat[,2] <- as.numeric(dat[,2])
     dat[,1] <- as.numeric(dat[,1])
     f <- formula(paste(colnames(dat)[2], " ~ ", colnames(dat)[1], sep = ""))
-    fit.beta <- try(betareg(f, data = dat), silent = TRUE)
-    #print(summary(fit.beta)$coefficients$mean)
-    #print(confint(fit.beta))
+    fit.beta <- try(betareg(f, data = dat, maxit = 50), silent = TRUE)
+    
     if(class(fit.beta) != "try-error"){
       est <- summary(fit.beta)$coefficients$mean[2,1]
       std.err <- summary(fit.beta)$coefficients$mean[2,2]
       ci <- c(est + qnorm(c(0.025, 0.975))*std.err)
       out.beta <- c(summary(fit.beta)$coefficients$mean[2,c(1,2)], NA, ci, summary(fit.beta)$coefficients$mean[2,4])
-      #confint(fit.beta)[2,]
-      #out.beta <- tryCatch(c(summary(fit.beta)$coefficients$mean[2,c(1,2)], NA, ci, summary(fit.beta)$coefficients$mean[2,4]), error = function(err) c(rep(NA),6))
-      
     } else {
       out.beta <- rep(NA, 6)
     }
-    
     beta.out[i,] <- out.beta
   }
   beta.out <- as.data.frame(beta.out)
@@ -757,42 +733,8 @@ taxa.bin.beta.func <- function(bin.var, taxa) {
 }
 
 #######################
-# Binary - Covariates #     need to add covariate
+# Binary - Covariates #
 #######################
-
-# taxa.bin.cov.lm.func <- function(bin.var, cov.var, taxa) {   
-#   n.cov <- ncol(cov.var)
-#   n.tax <- ncol(taxa)
-#   d <- as.data.frame(cbind(bin.var, cov.var, taxa))
-#   lm.out <- matrix(NA, n.tax, 6)
-#   for (i in 1:n.tax) {
-#     taxon <- taxa[,i]
-#     #here4
-#     lm.f <- formula(paste("taxon", "~", colnames(bin.var), "+", paste(colnames(cov.var), collapse = "+")))
-#     fit <- try(lm(lm.f, data = d), silent = TRUE)
-#     
-#     est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
-#     std.err <- tryCatch(summary(fit)$coefficients[2,2], error = function(err) NA)
-#     df <- tryCatch(summary(fit)$df[2], error = function(err) NA)
-#     if(is.na(df)){
-#       ci <- tryCatch(c(est - qnorm(0.975)*std.err, est + qnorm(0.975)*std.err), error = function(err) C(NA,NA))
-#     }else{
-#       ci <- tryCatch(c(est - qt(0.975, df = df)*std.err, est + qt(0.975, df = df)*std.err), error = function(err) C(NA,NA))
-#     }
-#     
-#     p.val <- tryCatch(summary(fit)$coefficients[2,4], error = function(err) NA)
-#     
-#     out <- c(est, std.err, df, ci, p.val)
-#     
-#     #out.lm <- c(summary(fit.lm)$coefficients[2,c(1,2)], summary(fit.lm)$df[2], confint(fit.lm)[2,], summary(fit.lm)$coefficients[2,4])
-#     lm.out[i,] <- out
-#   }
-#   lm.out <- as.data.frame(lm.out)
-#   rownames(lm.out) <- colnames(taxa)
-#   colnames(lm.out) <- c("Est", "Std Err", "DF", "Lower", "Upper", "P.value")
-#   return(lm.out)
-#   
-# }
 
 taxa.bin.cov.lm.united.func <- function(bin.var, cov.var, taxa) {
   n.cov <- ncol(cov.var)
@@ -804,23 +746,20 @@ taxa.bin.cov.lm.united.func <- function(bin.var, cov.var, taxa) {
       lm.out <- matrix(NA, n.tax, 6)
       for (j in 1:n.tax) {
         taxon <- taxa[[i]][,j]
-        #here5
         lm.f <- formula(paste("taxon", "~", colnames(bin.var), "+", paste(colnames(cov.var), collapse = "+")))
         fit <- try(lm(lm.f, data = d), silent = TRUE)
-        
         est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
         std.err <- tryCatch(summary(fit)$coefficients[2,2], error = function(err) NA)
         df <- tryCatch(summary(fit)$df[2], error = function(err) NA)
+
         if(is.na(df)){
           ci <- tryCatch(c(est - qnorm(0.975)*std.err, est + qnorm(0.975)*std.err), error = function(err) C(NA,NA))
         }else{
           ci <- tryCatch(c(est - qt(0.975, df = df)*std.err, est + qt(0.975, df = df)*std.err), error = function(err) C(NA,NA))
         }
-        
         p.val <- tryCatch(summary(fit)$coefficients[2,4], error = function(err) NA)
         
         out <- c(est, std.err, df, ci, p.val)
-        #out.lm <- c(summary(fit.lm)$coefficients[2,c(1,2)], summary(fit.lm)$df[2], confint(fit.lm)[2,], summary(fit.lm)$coefficients[2,4])
         lm.out[j,] <- out
       }
       lm.out <- as.data.frame(lm.out)
@@ -902,15 +841,13 @@ all.taxa.logit.reg.coef.bin.cov.func <- function(bin.var, cov.var, taxa.out, sca
       for (j in 1:n.tax) {
         taxon <- taxa[,j]
         d <- as.data.frame(cbind(bin.var, cov.var, taxon))
-        #d[,1] <- as.numeric(d[,1])
-        #d[,3] <- as.numeric(d[,3])
-        
+
         if(scale){
           logit.f <- formula(paste(colnames(bin.var), "~" , "scale(taxon)", "+", paste(colnames(cov.var), collapse = "+")))
         }else {
           logit.f <- formula(paste(colnames(bin.var), "~" , "taxon", "+", paste(colnames(cov.var), collapse = "+")))
         }
-        #here6
+
         fit <- try(glm(logit.f, data = d, family = "binomial"), silent = TRUE)
         
         est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
@@ -947,30 +884,22 @@ all.taxa.logit.bin.cov.func <- function(bin.var, cov.var, taxa.out, scale = TRUE
       for (j in 1:n.tax) {
         taxon <- taxa[,j]
         d <- as.data.frame(cbind(bin.var, cov.var, taxon))
-        #d[,1] <- as.numeric(d[,1])
-        #d[,3] <- as.numeric(d[,3])
         if(scale){
           logit.f <- formula(paste(colnames(bin.var), "~" , "scale(taxon)", "+", paste(colnames(cov.var), collapse = "+")))
         } else {
           logit.f <- formula(paste(colnames(bin.var), "~" , "taxon", "+", paste(colnames(cov.var), collapse = "+")))
         }
-        #here7
         fit <- try(glm(logit.f, data = d , family = "binomial"), silent = TRUE)
-        
-        #or.se <- sqrt(exp(est)^2*diag(vcov(fit.logit)))[2]
-        #ci <- c(exp(est - qt(0.975, df)*std.err), exp(est + qt(0.975, df)*std.err))
         
         or <- tryCatch(exp(summary(fit)$coefficients[2,1]), error = function(err) NA)
         or.se <- tryCatch(sqrt(or^2*diag(vcov(fit)))[2], error = function(err) NA)
         df <- tryCatch(summary(fit)$df[2], error = function(err) NA)
-        
         if(is.na(df)){
           ci <- tryCatch(c(exp(summary(fit)$coefficients[2,1] - qnorm(0.975)*summary(fit)$coefficients[2,2]), exp(summary(fit)$coefficients[2,1] + qnorm(0.975)*summary(fit)$coefficients[2,2])), error = function(err) c(NA,NA))
         }else{
           ci <- tryCatch(c(exp(summary(fit)$coefficients[2,1] - qt(0.975, df = df)*summary(fit)$coefficients[2,2]), exp(summary(fit)$coefficients[2,1] + qt(0.975, df = df)*summary(fit)$coefficients[2,2])), error = function(err) c(NA,NA))
         }
         p.val <- tryCatch(summary(fit)$coefficients[2,4], error = function(err) NA)
-        
         out <- c(or, or.se, df, ci, p.val)
         logit.out[j,] <- out
       }
@@ -985,53 +914,19 @@ all.taxa.logit.bin.cov.func <- function(bin.var, cov.var, taxa.out, scale = TRUE
   return(all.logit.out)
 }
 
-taxa.bin.cov.glm.nb.func <- function(bin.var, cov.var, taxa) {
+taxa.bin.cov.glm.nb.func <- function(bin.var, cov.var, taxa, library.size) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     lmer.out <- matrix(NA, n.tax, 6)
-    library.size <- apply(taxa,1, sum)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
       dat <- as.data.frame(cbind(bin.var, cov.var, taxon))
       f <- formula(paste(colnames(dat)[ncol(dat)], " ~ ", colnames(dat)[1], "+", paste(names(cov.var), collapse = "+"), "+ offset(log(library.size))", sep = ""))
-      #print(f)
-      #f <- formula(paste(colnames(dat)[4], " ~ ", colnames(dat)[1], "+", paste(names(cov.var), collapse = "+"), sep = ""))
       fit <- try(glm.nb(f, data = dat), silent = TRUE)
       est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
       std.err <- tryCatch(summary(fit)$coefficients[2,2], error = function(err) NA)
       df <- NA
-      ci <- c(est - qnorm(0.975)*std.err, est + qnorm(0.975)*std.err)
-      p.val <- tryCatch(summary(fit)$coefficients[2,4], error = function(err) NA)
-      
-      out <- c(est, std.err, df, ci, p.val)
-      lmer.out[i,] <- out
-    }
-    lmer.out <- as.data.frame(lmer.out)
-    rownames(lmer.out) <- colnames(taxa)
-    colnames(lmer.out) <- c("Est", "Std Err", "DF", "Lower", "Upper", "P.value")
-    return(lmer.out)
-  }
-}
-
-taxa.bin.cov.glm.nb.rarefy.func <- function(bin.var, cov.var, taxa) {
-  if(!is.null(taxa)){
-    n.tax <- ncol(taxa)
-    lmer.out <- matrix(NA, n.tax, 6)
-    for (i in 1:n.tax) {
-      taxon <- taxa[,i]
-      dat <- as.data.frame(cbind(bin.var, cov.var, taxon))
-      f <- formula(paste(colnames(dat)[ncol(dat)], " ~ ", colnames(dat)[1], "+", paste(names(cov.var), collapse = "+"), sep = ""))
-      #f <- formula(paste(colnames(dat)[4], " ~ ", colnames(dat)[1], "+", paste(names(cov.var), collapse = "+"), sep = ""))
-      fit <- try(glm.nb(f, data = dat), silent = TRUE)
-      
-      est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
-      std.err <- tryCatch(summary(fit)$coefficients[2,2], error = function(err) NA)
-      df <- tryCatch(summary(fit)$df[2], error = function(err) NA)
-      if(is.na(df)){
-        ci <- tryCatch(c(est - qnorm(0.975)*std.err, est + qnorm(0.975)*std.err), error = function(err) C(NA,NA))
-      }else{
-        ci <- tryCatch(c(est - qt(0.975, df = df)*std.err, est + qt(0.975, df = df)*std.err), error = function(err) C(NA,NA))
-      }
+      ci <- tryCatch(c(est - qnorm(0.975)*std.err, est + qnorm(0.975)*std.err), error = function(err) C(NA,NA))
       p.val <- tryCatch(summary(fit)$coefficients[2,4], error = function(err) NA)
       out <- c(est, std.err, df, ci, p.val)
       lmer.out[i,] <- out
@@ -1043,22 +938,14 @@ taxa.bin.cov.glm.nb.rarefy.func <- function(bin.var, cov.var, taxa) {
   }
 }
 
-all.taxa.bin.cov.glm.nb <- function(bin.var, cov.var, taxa, multi.method = "BH", rarefy = FALSE) {
+all.taxa.bin.cov.glm.nb <- function(bin.var, cov.var, taxa, library.size, multi.method = "BH") {
   tax.out <- list()
-  if(rarefy == FALSE){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.bin.cov.glm.nb.func(bin.var, cov.var, taxa[[i]])
-      count.taxa.test.q.out <- bin.q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
-  } else if(rarefy == TRUE) {
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.bin.cov.glm.nb.rarefy.func(bin.var, cov.var, taxa[[i]])
-      count.taxa.test.q.out <- bin.q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
-  }
   
+  for (i in 1:6) {
+    count.taxa.test.out <- taxa.bin.cov.glm.nb.func(bin.var, cov.var, taxa[[i]], library.size)
+    count.taxa.test.q.out <- bin.q.func(count.taxa.test.out, method = multi.method)
+    tax.out[[i]] <- count.taxa.test.q.out
+  }
   names(tax.out) <- c("phylum", "class", "order", "family", "genus", "species")
   return(tax.out)
 }
@@ -1072,14 +959,12 @@ all.taxa.bin.cov.beta <- function(bin.var, cov.var, taxa, multi.method = "BH"){
   }
   names(tax.out) <- c("phylum", "class", "order", "family", "genus", "species")
   return(tax.out)
-  
 }
 
 taxa.bin.cov.beta.func <- function(bin.var, cov.var, taxa) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     beta.out <- matrix(NA, n.tax, 6)
-    print(n.tax)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
       dat <- as.data.frame(cbind(bin.var, cov.var, taxon))
@@ -1128,29 +1013,23 @@ taxa.forest.plot.pages <- function(all.taxa.q.out, species.include, mult.test.co
   }
   
   total <- length(unlist(sig.by.rank))
-  print(total)
   
   if(total>80) {
-    #capacity <- c(40:80)
     plot.per.page <- total
     num.pages <- 0
-    #num.mod <- 0
     while(plot.per.page > 80){
       num.pages <- num.pages +1
       plot.per.page <- total%/%num.pages
-      #num.mod <- mod(total, num.pages)
     }
   } else if(total<=80 & total>=0) {
     num.pages = 1
     plot.per.page <-total
-    #num.mod <- 0
   }
   
   return(num.pages)
 }
 
 taxa.forest.plot.pages1 <- function(all.taxa.q.out, taxa.names.out, species.include, report.type = "Est", mult.test.cor = "TRUE") {
-  print("forest.plot is in process")
   sig.by.rank <- list()
   
   if(species.include){
@@ -1188,10 +1067,7 @@ taxa.forest.plot.pages1 <- function(all.taxa.q.out, taxa.names.out, species.incl
       num.pages <- num.pages +1
       plot.per.page <- total%/%num.pages
       num.mod <- mod(total, num.pages)
-      #print(num.pages)
     }
-    # print(plot.per.page)
-    # print(num.mod)
   } else if(total<=80 & total>=1) {
     num.pages = 1
     plot.per.page <-total
@@ -1251,10 +1127,7 @@ taxa.forest.plot.pages1 <- function(all.taxa.q.out, taxa.names.out, species.incl
       all.text.tab[[p]] <- rbind(as.matrix(text.tab.all), info[c(initial:(initial+actual.plot.per.page-1)),])
       all.ci.tab[[p]] <- rbind(ci.tab.all, info.ci[c(initial:(initial+actual.plot.per.page-1)),])
     }
-    print("forest.plot has finished")
-    
   } else {
-    
     all.text.tab <- NULL
     all.ci.tab <- NULL
   }
@@ -1265,9 +1138,6 @@ taxa.forest.plot.pages2 <- function(page.taxa.q.out, page) {
   
   text.tab.all <- page.taxa.q.out$all.text.tab[[page]]
   ci.tab.all <- page.taxa.q.out$all.ci.tab[[page]]
-  
-  #unlist(taxa.names.rank.out$duplicates)[!is.na(unlist(taxa.names.rank.out$duplicates))]
-  
   
   if(is.null(text.tab.all) & is.null(ci.tab.all)){
     plot.new()
@@ -1283,47 +1153,74 @@ taxa.forest.plot.pages2 <- function(page.taxa.q.out, page) {
       maxStr <- 0
     }
     
-    # if(maxStr<=55){
-    #   text.tab.all[,3][1] <- paste(paste(rep(" ", (maxStr)),collapse =""),(forestplot.data$all.text.tab[[1]][,3][1]))
-    # }else{
-    #   text.tab.all[,3][1] <- paste(paste(rep(" ", 45),collapse =""),(forestplot.data$all.text.tab[[1]][,3][1]))
-    # }
-
-    #print(text.tab.all[[,3]][1])
     text.tab.all[,3] <- substr(text.tab.all[,3], 1, 55)
-    
+    #par(mar=c(0, 0.2, 0, 0.2))
     if(text.tab.all[1,4] == "Est."){
-      forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3],
-                 hrzl_lines=TRUE, new_page=TRUE, boxsize=0.25, line.margin=0.1, grid=0, colgap = unit(1, "cm"), graphwidth = unit(6, "cm"), #lineheight = unit(0.4,"cm"),
-                 col=fpColors(box=rgb(1,0,0,0.5), line="black", summary="red3"), xlab="95% Confidence Interval", mar = unit(c(0.5,0,0.5,0), "cm"), #mar = unit(c(blank.space,0,0,0), "cm"),
-                 txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.7), gpar(fontfamily="", cex=0.7)),
-                                ticks=gpar(fontfamily="", cex=0.7),
-                                xlab=gpar(fontfamily="", cex=0.7)))
-    }else{
-      forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3], 
-                 zero = 1, hrzl_lines=TRUE, new_page=TRUE, boxsize=0.25, line.margin=0.1, grid=0, colgap = unit(1, "cm"), graphwidth = unit(6, "cm"), #lineheight = unit(0.4,"cm"),
-                 col=fpColors(box=rgb(1,0,0,0.5), line="black", summary="red3"), xlab="95% Confidence Interval", mar = unit(c(0.5,0,0.5,0), "cm"),
-                 txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.7), gpar(fontfamily="", cex=0.7)),
-                                ticks=gpar(fontfamily="", cex=0.7),
-                                xlab=gpar(fontfamily="", cex=0.7)))
+      if(nrow(ci.tab.all) <= 45){
+        forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3],
+                   hrzl_lines=TRUE, new_page=TRUE, boxsize=0.25, grid=0, colgap = unit(1, "cm"), graphwidth = unit(6, "cm"), lineheight = "lines", line.margin = unit(0.12, "cm"),
+                   col=fpColors(box=rgb(1,0,0,0.5), line="black", summary="red3"), xlab="95% Confidence Interval", mar = unit(c(0.5,0,0.5,0), "cm"), #mar = unit(c(blank.space,0,0,0), "cm"),
+                   txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.75), gpar(fontfamily="", cex=0.75)),
+                                  ticks=gpar(fontfamily="", cex=0.75),
+                                  xlab=gpar(fontfamily="", cex=0.75)))
+      } else {
+        forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3],
+                   hrzl_lines=TRUE, new_page=TRUE, boxsize=0.25, grid=0, colgap = unit(1, "cm"), graphwidth = unit(6, "cm"), 
+                   col=fpColors(box=rgb(1,0,0,0.5), line="black", summary="red3"), xlab="95% Confidence Interval", mar = unit(c(0.5,0,0.5,0), "cm"), #mar = unit(c(blank.space,0,0,0), "cm"),
+                   txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.75), gpar(fontfamily="", cex=0.75)),
+                                  ticks=gpar(fontfamily="", cex=0.75),
+                                  xlab=gpar(fontfamily="", cex=0.75)))
+      }
+      
+    } else {
+      if(nrow(ci.tab.all) <= 45){
+        forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3],
+                   zero = 1, hrzl_lines=TRUE, new_page=TRUE, boxsize=0.25, grid=0, colgap = unit(1, "cm"), graphwidth = unit(6, "cm"), lineheight = "lines", line.margin = unit(0.12, "cm"),
+                   col=fpColors(box=rgb(1,0,0,0.5), line="black", summary="red3"), xlab="95% Confidence Interval", mar = unit(c(0.5,0,0.5,0), "cm"), #mar = unit(c(blank.space,0,0,0), "cm"),
+                   txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.75), gpar(fontfamily="", cex=0.75)),
+                                  ticks=gpar(fontfamily="", cex=0.75),
+                                  xlab=gpar(fontfamily="", cex=0.75)))
+      } else {
+        forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3],
+                   zero = 1, hrzl_lines=TRUE, new_page=TRUE, boxsize=0.25, grid=0, colgap = unit(1, "cm"), graphwidth = unit(6, "cm"), 
+                   col=fpColors(box=rgb(1,0,0,0.5), line="black", summary="red3"), xlab="95% Confidence Interval", mar = unit(c(0.5,0,0.5,0), "cm"), #mar = unit(c(blank.space,0,0,0), "cm"),
+                   txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.75), gpar(fontfamily="", cex=0.75)),
+                                  ticks=gpar(fontfamily="", cex=0.75),
+                                  xlab=gpar(fontfamily="", cex=0.75)))
+      }
+      
+      #forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3], 
+      #           zero = 1, hrzl_lines=TRUE, new_page=TRUE, boxsize=0.25, grid=0, colgap = unit(1, "cm"), graphwidth = unit(6, "cm"), lineheight = unit(0.4,"cm"),
+      #           col=fpColors(box=rgb(1,0,0,0.5), line="black", summary="red3"), xlab="95% Confidence Interval",# mar = unit(c(0.5,0,0.5,0), "cm"),
+      #           txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.75), gpar(fontfamily="", cex=0.75)),
+      #                          ticks=gpar(fontfamily="", cex=0.75),
+      #                          xlab=gpar(fontfamily="", cex=0.75)))
     } 
   }
 }
 
-duplicate.list <- function(taxa.names.out, species.include = FALSE){
-  if(species.include){
-    display <- 5
-  }else{
-    display <- 6
-  }
-  #print(display)
-  #plot.new()
-  # duplicate.taxa <- unlist(taxa.names.rank.out$duplicates[1:display])[!is.na(unlist(taxa.names.rank.out$duplicates))]
-  # text(x=0.3, y=0.5, paste(duplicate.taxa, collapse = "\n"))
-  if(sum(!is.na(unlist(taxa.names.out$duplicates))) > 0){
-    duplicate.taxa <- unlist(taxa.names.rank.out$duplicates[1:display])[!is.na(unlist(taxa.names.rank.out$duplicates))]
-    text(x=0.5, y=0.5, paste(duplicate.taxa, collapse = "\n"), cex = 0.75)
+# duplicate.list <- function(taxa.names.rank.out, species.include = FALSE){
+#   if(species.include){
+#     display <- 5
+#   }else{
+#     display <- 6
+#   }
+#   if(sum(!is.na(unlist(taxa.names.rank.out$duplicates))) > 0){
+#     duplicate.taxa <- unlist(taxa.names.rank.out$duplicates[1:display])[!is.na(unlist(taxa.names.rank.out$duplicates[1:display]))]
+#     par(mar=c(0, 0.5, 0, 0.5))
+#     text(x=0, y=0.5, paste(duplicate.taxa, collapse = "\n"), cex = 0.75, adj = c(0, NA))
+#   } else {
+#     text(x=0.5, y=0.5, "")
+#   }
+# }
+
+duplicate.list <- function(duplicate.taxa, taxon.inplot, duplicate.full.list){
+  if(length(duplicate.taxa %in% taxon.inplot)>0) {
+    duplicate.taxa <- unlist(duplicate.full.list)[duplicate.taxa %in% taxon.inplot]
+    par(mar=c(0, 0.5, 0, 0.5))
+    text(x=0, y=0.5, paste(duplicate.taxa, collapse = "\n"), cex = 0.75, adj = c(0, NA))
   } else {
+    print("?!")
     text(x=0.5, y=0.5, "")
   }
 }
@@ -1367,8 +1264,6 @@ taxa.con.beta.recode.func <- function(sam.dat, sel.con.var, rename.con.var, taxa
 
 taxa.sum.apply <- function(taxa.out, margin, func) {
   taxa.sum.out <- list()
-  print(length(taxa.out$taxa))
-  print("length of taxa.out$taxa")
   for(i in 1:6){
     if(!is.null(taxa.out$taxa[[i]])){
       taxa.sum.out[[i]] <- apply(taxa.out$taxa[[i]], margin, func)
@@ -1384,11 +1279,9 @@ taxa.lm.con.func <- function(con.var, taxa) {
     if(!is.null(taxa[[j]])){
       taxa.rank <- taxa[[j]]
       n.tax <- ncol(taxa.rank)
-      print(n.tax)
       lm.out <- matrix(NA, n.tax, 6)
       for (i in 1:n.tax) {
         taxon <- taxa.rank[,i]
-        #here8
         fit <- try(lm(taxon ~ con.var[,1]), silent = TRUE)
         
         est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
@@ -1414,20 +1307,16 @@ taxa.lm.con.func <- function(con.var, taxa) {
   return(taxa.lm.out)
 }
 
-taxa.con.glm.nb.func <- function(con.var, taxa) {
+taxa.con.glm.nb.func <- function(con.var, taxa, library.size) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     lmer.out <- matrix(NA, n.tax, 6)
-    library.size <- apply(taxa,1, sum)
-    print(n.tax)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
-      #print(i)
       dat <- as.data.frame(cbind(con.var, taxon))
       dat[,2] <- as.numeric(dat[,2])
       dat[,1] <- as.numeric(dat[,1])
       f <- formula(paste(colnames(dat)[2], " ~ ", colnames(dat)[1], "+ offset(log(library.size))", sep = ""))
-      #f <- formula(paste(colnames(dat)[2], " ~ ", colnames(dat)[1], sep = ""))
       fit <- try(glm.nb(f, data = dat), silent = TRUE)
       
       est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
@@ -1436,7 +1325,6 @@ taxa.con.glm.nb.func <- function(con.var, taxa) {
       ci <- c(est - qnorm(0.975)*std.err, est + qnorm(0.975)*std.err)
       p.val <- tryCatch(summary(fit)$coefficients[2,4], error = function(err) NA)
       out <- c(est, std.err, DF, ci, p.val)
-      
       lmer.out[i,] <- out
     }
     lmer.out <- as.data.frame(lmer.out)
@@ -1446,50 +1334,12 @@ taxa.con.glm.nb.func <- function(con.var, taxa) {
   }
 }
 
-taxa.con.glm.nb.rarefy.func <- function(con.var, taxa) {
-  n.tax <- ncol(taxa)
-  lmer.out <- matrix(NA, n.tax, 6)
-  library.size <- apply(taxa,1, sum)
-  print(n.tax)
-  for (i in 1:n.tax) {
-    taxon <- taxa[,i]
-    #print(i)
-    dat <- as.data.frame(cbind(con.var, taxon))
-    dat[,2] <- as.numeric(dat[,2])
-    dat[,1] <- as.numeric(dat[,1])
-    f <- formula(paste(colnames(dat)[2], " ~ ", colnames(dat)[1], sep = ""))
-    #f <- formula(paste(colnames(dat)[2], " ~ ", colnames(dat)[1], sep = ""))
-    fit <- try(glm.nb(f, data = dat), silent = TRUE)
-    
-    est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
-    std.err <- tryCatch(summary(fit)$coefficients[2,2], error = function(err) NA)
-    DF <- NA
-    ci <- c(est - qnorm(0.975)*std.err, est + qnorm(0.975)*std.err)
-    p.val <- tryCatch(summary(fit)$coefficients[2,4], error = function(err) NA)
-    out <- c(est, std.err, DF, ci, p.val)
-    
-    lmer.out[i,] <- out
-  }
-  lmer.out <- as.data.frame(lmer.out)
-  rownames(lmer.out) <- colnames(taxa)
-  colnames(lmer.out) <- c("Est", "Std Err", "DF", "Lower", "Upper", "P.value")
-  return(lmer.out)
-}
-
-all.taxa.con.glm.nb <- function(con.var, taxa, multi.method = "BH", rarefy = FALSE) {
+all.taxa.con.glm.nb <- function(con.var, taxa, library.size, multi.method = "BH") {
   tax.out <- list()
-  if(rarefy == FALSE){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.con.glm.nb.func(con.var = con.var, taxa = taxa[[i]])  
-      count.taxa.test.q.out <- bin.q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
-  }else if(rarefy){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.con.glm.nb.rarefy.func(con.var = con.var, taxa = taxa[[i]])  
-      count.taxa.test.q.out <- bin.q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
+  for (i in 1:6) {
+    count.taxa.test.out <- taxa.con.glm.nb.func(con.var = con.var, taxa = taxa[[i]], library.size)  
+    count.taxa.test.q.out <- bin.q.func(count.taxa.test.out, method = multi.method)
+    tax.out[[i]] <- count.taxa.test.q.out
   }
   names(tax.out) <- c("phylum", "class", "order", "family", "genus", "species")
   return(tax.out)
@@ -1510,25 +1360,18 @@ taxa.con.beta.func <- function(con.var, taxa) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     beta.out <- matrix(NA, n.tax, 6)
-    print(n.tax)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
-      print(i)
       dat <- as.data.frame(cbind(con.var, taxon))
       dat[,2] <- as.numeric(dat[,2])
       dat[,1] <- as.numeric(dat[,1])
-      #print(head(dat))
       f <- formula(paste(colnames(dat)[2], " ~ ", colnames(dat)[1], sep = ""))
-      fit.beta <- try(betareg(f, data = dat), silent = TRUE)
-      #print(summary(fit.beta)$coefficients$mean)
-      #print(confint(fit.beta))
+      fit.beta <- try(betareg(f, data = dat, maxit = 50), silent = TRUE)
       if(class(fit.beta) != "try-error"){
         est <- summary(fit.beta)$coefficients$mean[2,1]
         std.err <- summary(fit.beta)$coefficients$mean[2,2]
         ci <- c(est + qnorm(c(0.025, 0.975))*std.err)
         out.beta <- c(summary(fit.beta)$coefficients$mean[2,c(1,2)], NA, ci, summary(fit.beta)$coefficients$mean[2,4])
-        #confint(fit.beta)[2,]
-        #out.beta <- tryCatch(c(summary(fit.beta)$coefficients$mean[2,c(1,2)], NA, ci, summary(fit.beta)$coefficients$mean[2,4]), error = function(err) c(rep(NA),6))
       } else {
         out.beta <- rep(NA, 6)
       }
@@ -1598,16 +1441,6 @@ taxa.bin.boxplot <- function(bin.var, taxa.out, t.test.q.out, taxa.names.out, pa
   
 }
 
-# taxa.q.func <- function(out, method = c("BH", "BY")) {
-#   q.out <- list()
-#   for(i in 1:6) {
-#     Q.value <- p.adjust(out[[i]]$P.value, method = method)
-#     q.out[[i]] <- cbind(out[[i]],Q.value)
-#   }
-#   names(q.out) <- names(out)
-#   return(q.out)
-# }
-
 taxa.q.func <- function(out, method = c("BH", "BY")) {
   q.out <- list()
   for(i in 1:6) {
@@ -1626,7 +1459,6 @@ taxa.qr.con.func <- function(con.var, taxa, tau, qr.method, se.method, n.res) {
     taxa.rank <- taxa[[i]]
     n.tax <- ncol(taxa.rank)
     qr.out <- matrix(NA, n.tax, 6)
-    print(n.tax)
     for(j in 1:n.tax) {
       taxon <- taxa.rank[,j]
       fit.qr <- rq(taxon ~ con.var[,1], tau = tau, method = qr.method)
@@ -1699,7 +1531,6 @@ taxa.lm.con.cov.func <- function(con.var, cov.var, taxa) {
       for (i in 1:n.tax) {
         taxon <- taxa.rank[,i]
         lm.f <- formula(paste("taxon", "~", colnames(con.var), "+", paste(colnames(cov.var), collapse = "+")))
-        #here9
         fit <- try(lm(lm.f, data = d), silent = TRUE)
         
         est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
@@ -1725,11 +1556,11 @@ taxa.lm.con.cov.func <- function(con.var, cov.var, taxa) {
   return(taxa.lm.out)
 }
 
-taxa.con.cov.glm.nb.func <- function(con.var, cov.var, taxa) {
+taxa.con.cov.glm.nb.func <- function(con.var, cov.var, taxa, library.size) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     lmer.out <- matrix(NA, n.tax, 6)
-    library.size <- apply(taxa,1, sum)
+    # library.size <- apply(taxa,1, sum)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
       dat <- as.data.frame(cbind(con.var, cov.var, taxon))
@@ -1751,47 +1582,12 @@ taxa.con.cov.glm.nb.func <- function(con.var, cov.var, taxa) {
   }
 }
 
-taxa.con.cov.glm.nb.rarefy.func <- function(con.var, cov.var, taxa) {
-  n.tax <- ncol(taxa)
-  lmer.out <- matrix(NA, n.tax, 6)
-  library.size <- apply(taxa,1, sum)
-  for (i in 1:n.tax) {
-    #print(c(i,names(taxa[,i])))
-    taxon <- taxa[,i]
-    dat <- as.data.frame(cbind(con.var, cov.var, taxon))
-    f <- formula(paste(colnames(dat)[ncol(dat)], " ~ ", colnames(dat)[1], "+", paste(names(cov.var), collapse = "+"), sep = ""))
-    #print(f)
-    #f <- formula(paste(colnames(dat)[4], " ~ ", colnames(dat)[1], "+", paste(names(cov.var), collapse = "+"), sep = ""))
-    fit <- try(glm.nb(f, data = dat), silent = TRUE)
-    est <- tryCatch(summary(fit)$coefficients[2,1], error = function(err) NA)
-    std.err <- tryCatch(summary(fit)$coefficients[2,2], error = function(err) NA)
-    df <- NA
-    ci <- c(est - qnorm(0.975)*std.err, est + qnorm(0.975)*std.err)
-    p.val <- tryCatch(summary(fit)$coefficients[2,4], error = function(err) NA)
-    
-    out <- c(est, std.err, df, ci, p.val)
-    lmer.out[i,] <- out
-  }
-  lmer.out <- as.data.frame(lmer.out)
-  rownames(lmer.out) <- colnames(taxa)
-  colnames(lmer.out) <- c("Est", "Std Err", "DF", "Lower", "Upper", "P.value")
-  return(lmer.out)
-}
-
-all.taxa.con.cov.glm.nb <- function(con.var, cov.var, taxa, multi.method = "BH", rarefy = FALSE) {
+all.taxa.con.cov.glm.nb <- function(con.var, cov.var, taxa, library.size, multi.method = "BH") {
   tax.out <- list()
-  if(rarefy == FALSE){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.con.cov.glm.nb.func(con.var = con.var, cov.var = cov.var, taxa = taxa[[i]])
-      count.taxa.test.q.out <- bin.q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
-  }else if(rarefy){
-    for (i in 1:6) {
-      count.taxa.test.out <- taxa.con.cov.glm.nb.rarefy.func(con.var = con.var, cov.var = cov.var, taxa = taxa[[i]])
-      count.taxa.test.q.out <- bin.q.func(count.taxa.test.out, method = multi.method)
-      tax.out[[i]] <- count.taxa.test.q.out
-    }
+  for (i in 1:6) {
+    count.taxa.test.out <- taxa.con.cov.glm.nb.func(con.var = con.var, cov.var = cov.var, taxa = taxa[[i]], library.size)
+    count.taxa.test.q.out <- bin.q.func(count.taxa.test.out, method = multi.method)
+    tax.out[[i]] <- count.taxa.test.q.out
   }
   names(tax.out) <- c("phylum", "class", "order", "family", "genus", "species")
   return(tax.out)
@@ -1812,15 +1608,13 @@ taxa.con.cov.beta.func <- function(con.var, cov.var, taxa) {
   if(!is.null(taxa)){
     n.tax <- ncol(taxa)
     beta.out <- matrix(NA, n.tax, 6)
-    #print(n.tax)
     for (i in 1:n.tax) {
       taxon <- taxa[,i]
-      #print(i)
       dat <- as.data.frame(cbind(con.var, cov.var, taxon))
       dat[,2] <- as.numeric(dat[,2])
       dat[,1] <- as.numeric(dat[,1])
       f <- formula(paste(colnames(dat)[ncol(dat)], " ~ ", colnames(dat)[1], "+", paste(colnames(cov.var), collapse = "+"), sep = ""))
-      fit.beta <- try(betareg(f, data = dat), silent = TRUE)
+      fit.beta <- try(betareg(f, data = dat, maxit = 50), silent = TRUE)
       if(class(fit.beta) != "try-error"){
         est <- summary(fit.beta)$coefficients$mean[2,1]
         std.err <- summary(fit.beta)$coefficients$mean[2,2]
@@ -1854,77 +1648,6 @@ p.value.0.1 <- function(x, round.x = 3) {
 ###################
 # Which variable? #
 ###################
-
-# Which primary variable do you want to select?
-
-# is.mon.rev.bin.con <- function(sam.dat) {
-#   
-#   n.var <- ncol(sam.dat)
-#   n.sam <- nrow(sam.dat)
-#   is.mon <- logical()
-#   is.rev <- logical()
-#   is.bin <- logical()
-#   is.con <- logical()
-#   
-#   for (i in 1:n.var) {
-#     sam.var <- as.matrix(sam.dat[,i])
-#     if (length(table(sam.var)) == 1) {
-#       is.mon[i] <- TRUE
-#     }
-#     if (length(table(sam.var)) != 1) {
-#       is.mon[i] <- FALSE
-#     }
-#     if (length(table(sam.var)) == n.sam & sum(is.na(as.numeric(sam.var))) == n.sam) {
-#       is.rev[i] <- TRUE
-#     }
-#     if (length(table(sam.var)) != n.sam | sum(is.na(as.numeric(sam.var))) != n.sam) {
-#       is.rev[i] <- FALSE
-#     }
-#     if (length(table(sam.var)) == 2) {
-#       is.bin[i] <- TRUE
-#     }
-#     if (length(table(sam.var)) != 2) {
-#       is.bin[i] <- FALSE
-#     }
-#     if (length(table(sam.var)) != 2 & sum(is.na(as.numeric(sam.var))) != n.sam) {
-#       is.con[i] <- TRUE
-#     }
-#     if (length(table(sam.var)) == 2 & sum(is.na(as.numeric(sam.var))) != n.sam) {
-#       is.con[i] <- FALSE
-#     }
-#     if (sum(is.na(as.numeric(sam.var))) == n.sam) {
-#       is.con[i] <- FALSE
-#     }
-#     
-#   }
-#   return(list(is.mon = is.mon, is.rev = is.rev, is.bin = is.bin, is.con = is.con))
-# }
-# 
-# pri.func <- function(sam.dat, mon.rev.bin.con) {
-#   colnames(sam.dat)[(mon.rev.bin.con$is.bin | mon.rev.bin.con$is.con) & !mon.rev.bin.con$is.mon]
-# }
-# 
-# is.bin.con.pri <- function(sam.dat, mon.rev.bin.con, sel.pri.var) {
-#   ind <- which(colnames(sam.dat) == sel.pri.var)
-#   if(length(ind) != 0){
-#     if (mon.rev.bin.con$is.bin[ind]) {
-#       out <- "Binary"
-#     } else {
-#       out <- "Continuous"
-#     }
-#   }else {
-#     out = "Neither"
-#   }
-#   return(out)
-# }
-# 
-# # What covariate(s) do you want to select?
-# 
-# cov.func <- function(sam.dat, mon.rev.bin.con, sel.pri.var) {
-#   ind.pri <- colnames(sam.dat) == sel.pri.var
-#   ind.mon.rev <- mon.rev.bin.con$is.mon | mon.rev.bin.con$is.rev
-#   return(colnames(sam.dat)[!(ind.pri | ind.mon.rev)])
-# }
 
 taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include = "FALSE") {
   
@@ -1994,8 +1717,6 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   connection.with.upper <- list()
   connection <- character()
   
-  #print(tax.tab.num[,"Phylum"])
-  
   tax.tab.num[,"Phylum"] <- as.character(lapply(tax.tab.num[,"Phylum"], function(x){ str_replace_all(x, "[[:punct:]]| |=", "")}))
   tax.tab.num[,"Class"] <- as.character(lapply(tax.tab.num[,"Class"], function(x){ str_replace_all(x,"[[:punct:]]| |=", "")}))
   tax.tab.num[,"Order"] <- as.character(lapply(tax.tab.num[,"Order"], function(x){ str_replace_all(x,"[[:punct:]]| |=", "")}))
@@ -2007,9 +1728,7 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   Phylum.desc <- c()
   Phylum.desc.dum <- c()
   
-  #####
   sig.Phylum <- Phylum[!grepl("Phylum", Phylum)]
-  #ind <- text.tab.all[,1] %in% Phylum[!grepl("Phylum", Phylum)]
   ind <- as.numeric(sig.Phylum)+1
   
   ind.pos.sig <- which(ci.tab.all[ind,1] >= 0)
@@ -2020,7 +1739,7 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   non.sig.Phylum <- Phylum[!is.element(Phylum,c(pos.sig.Phylum, neg.sig.Phylum))]
   
   dummy <- c()
-  for(i in 1:length(Phylum)){
+  for(i in 1:sum(!is.na(Phylum))){
     dummy <- c(dummy, paste0("dum",i))
   }
   
@@ -2035,7 +1754,7 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   }
   
   phylum.wdum <- rbind(phylum.wdum1, phylum.wdum2)
-  
+  k <- 1
   for (i in 1:length(Phylum)) {                                 # just include the following for loops inside this for loop and save each graph as pdf
     ind <- which(tax.tab.num[,"Phylum"] == Phylum[i])           # for (i in 1: length(phylum)) {~~~~, for (i in 1:length(Class))~~~~, for (i in 1: length(Order)~~....)}
     if (sum(!is.na(tax.tab.num[ind,"Class"])) >= 1) {
@@ -2044,9 +1763,11 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
       Phylum.desc[i] <- paste(Phylum[i], " -> {", paste(desc, collapse = " "), "} ", sep = "", collapse = "")
       
       if(Phylum[i] %in% phylum.wdum2){
-        Phylum.desc.dum[i] <- paste(Phylum[i], " -> {", paste(desc, collapse = " "), "} ", sep = "", collapse = "")  
+        Phylum.desc.dum[k] <- paste(Phylum[i], " -> {", paste(desc, collapse = " "), "} ", sep = "", collapse = "")  
+        k <- k+1
       }else{
-        Phylum.desc.dum[i] <- paste(phylum.wdum2[which(phylum.wdum1==Phylum[i])], " -> {", paste(desc, collapse = " "), "} ", sep = "", collapse = "")  
+        Phylum.desc.dum[k] <- paste(phylum.wdum2[which(phylum.wdum1==Phylum[i])], " -> {", paste(desc, collapse = " "), "} ", sep = "", collapse = "")  
+        k <- k+1
       }
       connection <- c(connection, desc)
     }
@@ -2072,7 +1793,6 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
       Class.desc[i] <- paste(Class[i], " -> {", paste(desc, collapse = " "), "}", sep = "", collapse = "")    
       connection <- c(connection, desc)
     }
-    
     connection.with.upper[[2]] <- connection
   }
   

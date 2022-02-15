@@ -29,14 +29,8 @@ library(proxy)
 # Data manipulation #
 #####################
 
-beta.bin.cat.func <- function(sam.dat, sel.bin.var) {
-  bin.var <- unlist(sam.dat[,sel.bin.var])
-  bin.var.no.na <- bin.var[!is.na(bin.var)]
-  bin.cat <- unique(bin.var.no.na)
-  return(bin.cat)
-}
-
 beta.bin.cat.ref.ori.func <- function(sam.dat, sel.bin.var = "ecig_status") {
+  
   return(levels(as.factor(as.data.frame(as.matrix(sam.dat))[,sel.bin.var])))
 }
 
@@ -53,6 +47,7 @@ beta.bin.cat.ref.func <- function(sel.bin.var, sel.ref, sel.com, sam.dat, Ds.Ks)
   for (i in 1:length(Ks)) {
     Ks[[i]] <- Ks[[i]][c(ind.ref, ind.com), c(ind.ref, ind.com)]
   }
+  
   return(list(bin.var = bin.var, Ds = Ds, Ks = Ks))
 }
 
@@ -61,14 +56,8 @@ beta.bin.cat.recode.func <- function(sam.dat, sel.bin.var = "ecig_status", ori.c
   ind.com <- which(sam.dat[,sel.bin.var] == ori.cat[2])
   sam.dat[ind.ref,sel.bin.var] <- rename.ref
   sam.dat[ind.com,sel.bin.var] <- rename.com
+  
   return(sam.dat)
-}
-
-beta.bin.cat.func <- function(sam.dat, sel.bin.var) {
-  bin.var <- unlist(sam.dat[,sel.bin.var])
-  bin.var.no.na <- bin.var[!is.na(bin.var)]
-  bin.cat <- unique(bin.var.no.na)
-  return(bin.cat)
 }
 
 ##################
@@ -109,14 +98,8 @@ Ds.Ks.func <- function(rare.biom, biom.after.qc) {
 # Data manipulation #
 #####################
 
-beta.bin.cat.func <- function(sam.dat, sel.bin.var) {
-  bin.var <- unlist(sam.dat[,sel.bin.var])
-  bin.var.no.na <- bin.var[!is.na(bin.var)]
-  bin.cat <- unique(bin.var.no.na)
-  return(bin.cat)
-}
-
 beta.bin.cat.ref.ori.func <- function(sam.dat, sel.bin.var = "ecig_status") {
+  
   return(levels(as.factor(as.data.frame(as.matrix(sam.dat))[,sel.bin.var])))
 }
 
@@ -125,6 +108,7 @@ beta.bin.cat.recode.func <- function(sam.dat, sel.bin.var = "ecig_status", ori.c
   ind.com <- which(sam.dat[,sel.bin.var] == ori.cat[2])
   sam.dat[ind.ref,sel.bin.var] <- rename.ref
   sam.dat[ind.com,sel.bin.var] <- rename.com
+  
   return(sam.dat)
 }
 
@@ -183,6 +167,7 @@ beta.con.id.recode.func <- function(sam.dat, sel.con.var, sel.id.var, rename.con
   for (i in 1:length(Ks)) {
     Ks[[i]] <- Ks[[i]][ind.nona, ind.nona]
   }
+  
   return(list(con.var = con.var, id.var = id.var, Ds = Ds, Ks = Ks))
 }
 
@@ -202,6 +187,7 @@ beta.con.id.cov.recode.func <- function(sam.dat, sel.con.var, sel.id.var, sel.co
   for (i in 1:length(Ks)) {
     Ks[[i]] <- Ks[[i]][ind.nona, ind.nona]
   }
+  
   return(list(con.var = con.var, id.var = id.var, cov.var = cov.var, Ds = Ds, Ks = Ks))
 }
 
@@ -215,6 +201,10 @@ glmm.mirkat.bin <- function(beta.bin.id.out) {
   set.seed(487)
   out <- GLMMMiRKAT(y = as.numeric(beta.bin.id.out$bin.var)-1, cov = NULL, id = unlist(beta.bin.id.out$id.var), Ks = beta.bin.id.out$Ks, model = "binomial", n.perm = 1000)
   
+  return(out)
+}
+
+glmm.mirkat.bin.plot <- function(out, beta.bin.id.out) {
   par(mfrow = c(3, 2))
   for (i in 1:length(beta.bin.id.out$Ds)) {
     if (out$ItembyItem[i] < 0.05) {
@@ -225,19 +215,23 @@ glmm.mirkat.bin <- function(beta.bin.id.out) {
     }
     mod <- betadisper(as.dist(beta.bin.id.out$Ds[[i]]), beta.bin.id.out$bin.var)
     plot(mod, ellipse = TRUE, hull = FALSE, main = names(beta.bin.id.out$Ds)[i], xlab="PC 1", ylab="PC 2",
-         sub = sub.tit, col = c("blue2", "red2"), cex=1.5)
+         sub=NA, col = c("blue2", "red2"), mgp=c(2.5,1,0), cex=1.7, label.cex=1.3, cex.lab=1.2, cex.main=1.7)
+    mtext(sub.tit, side=1, line=3.8, cex=1.0)
   }
   
   plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '')
-  legend("center", title = NULL, legend = levels(beta.bin.id.out$bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.5)
-  legend("bottom", paste("aGLMM-MiRKAT: ", p.value.0.1(out$aGLMMMiRKAT), sep=""), bty = "n", cex=1.5)
-  return(out)
+  legend("center", title = NULL, legend = levels(beta.bin.id.out$bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.6)
+  legend("bottom", paste("aGLMM-MiRKAT: ", p.value.0.1(out$aGLMMMiRKAT), sep=""), bty = "n", cex=1.6)
 }
 
 glmm.mirkat.bin.cov <- function(beta.bin.id.cov.out) {
   set.seed(487)
   out <- GLMMMiRKAT(y = as.numeric(beta.bin.id.cov.out$bin.var)-1, cov = beta.bin.id.cov.out$cov.var, id = unlist(beta.bin.id.cov.out$id.var), Ks = beta.bin.id.cov.out$Ks, model = "binomial", n.perm = 1000)
   
+  return(out)
+}
+
+glmm.mirkat.bin.cov.plot <- function(out, beta.bin.id.cov.out) {
   par(mfrow = c(3, 2))
   for (i in 1:length(beta.bin.id.cov.out$Ds)) {
     if (out$ItembyItem[i] < 0.05) {
@@ -248,19 +242,23 @@ glmm.mirkat.bin.cov <- function(beta.bin.id.cov.out) {
     }
     mod <- betadisper(as.dist(beta.bin.id.cov.out$Ds[[i]]), beta.bin.id.cov.out$bin.var)
     plot(mod, ellipse = TRUE, hull = FALSE, main = names(beta.bin.id.cov.out$Ds)[i], xlab="PC 1", ylab="PC 2",
-         sub = sub.tit, col = c("blue2", "red2"), cex=1.5)
+         sub=NA, col = c("blue2", "red2"), mgp=c(2.5,1,0), cex=1.7, label.cex=1.3, cex.lab=1.2, cex.main=1.7)
+    mtext(sub.tit, side=1, line=3.8, cex=1.0)
   }
   
   plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '')
-  legend("center", title = NULL, legend = levels(beta.bin.id.cov.out$bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.5)
-  legend("bottom", paste("aGLMM-MiRKAT: ", p.value.0.1(out$aGLMMMiRKAT), sep=""), bty = "n", cex=1.5)
-  return(out)
+  legend("center", title = NULL, legend = levels(beta.bin.id.cov.out$bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.6)
+  legend("bottom", paste("aGLMM-MiRKAT: ", p.value.0.1(out$aGLMMMiRKAT), sep=""), bty = "n", cex=1.6)
 }
 
 glmm.mirkat.con <- function(beta.con.id.out) {
   set.seed(487)
   out <- GLMMMiRKAT(y = unlist(beta.con.id.out$con.var), cov = NULL, id = unlist(beta.con.id.out$id.var), Ks = beta.con.id.out$Ks, model = "gaussian", n.perm = 1000)
   
+  return(out)
+}
+
+glmm.mirkat.con.plot <- function(out, beta.con.id.out) {
   par(mfrow = c(3, 2))
   for (i in 1:length(beta.con.id.out$Ds)) {
     if (out$ItembyItem[i] < 0.05) {
@@ -274,25 +272,29 @@ glmm.mirkat.con <- function(beta.con.id.out) {
     bin.var <- rep(NA, length(con.var))
     ind.gr <- which(con.var >= con.var.med)
     ind.sm <- which(con.var < con.var.med)
-    bin.var[ind.gr] <- paste(names(beta.con.id.out$con.var), ">=", con.var.med)
-    bin.var[ind.sm] <- paste(names(beta.con.id.out$con.var), "<", con.var.med)
+    bin.var[ind.gr] <- paste(names(beta.con.id.out$con.var), ">=", round(con.var.med,2))
+    bin.var[ind.sm] <- paste(names(beta.con.id.out$con.var), "<", round(con.var.med,2))
     bin.var <- factor(bin.var)
     
     mod <- betadisper(as.dist(beta.con.id.out$Ds[[i]]), bin.var)
     plot(mod, ellipse = TRUE, hull = FALSE, main = names(beta.con.id.out$Ds)[i], xlab="PC 1", ylab="PC 2",
-         sub = sub.tit, col = c("blue2", "red2"), cex=1.5)
+         sub=NA, col = c("blue2", "red2"), mgp=c(2.5,1,0), cex=1.7, label.cex=1.3, cex.lab=1.2, cex.main=1.7)
+    mtext(sub.tit, side=1, line=3.8, cex=1.0)
   }
   
   plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '')
-  legend("center", title = NULL, legend = levels(bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.5)
-  legend("bottom", paste("aGLMM-MiRKAT: ", p.value.0.1(out$aGLMMMiRKAT), sep=""), bty = "n", cex=1.5)
-  return(out)
+  legend("center", title = NULL, legend = levels(bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.6)
+  legend("bottom", paste("aGLMM-MiRKAT: ", p.value.0.1(out$aGLMMMiRKAT), sep=""), bty = "n", cex=1.6)
 }
 
 glmm.mirkat.con.cov <- function(beta.con.id.cov.out) {
   set.seed(487)
   out <- GLMMMiRKAT(y = unlist(beta.con.id.cov.out$con.var), cov = as.matrix(beta.con.id.cov.out$cov.var), id = unlist(beta.con.id.cov.out$id.var), Ks = beta.con.id.cov.out$Ks, model = "gaussian", n.perm = 1000)
   
+  return(out)
+}
+
+glmm.mirkat.con.cov.plot <- function(out, beta.con.id.cov.out) {
   par(mfrow = c(3, 2))
   for (i in 1:length(beta.con.id.cov.out$Ds)) {
     if (out$ItembyItem[i] < 0.05) {
@@ -306,19 +308,19 @@ glmm.mirkat.con.cov <- function(beta.con.id.cov.out) {
     bin.var <- rep(NA, length(con.var))
     ind.gr <- which(con.var >= con.var.med)
     ind.sm <- which(con.var < con.var.med)
-    bin.var[ind.gr] <- paste(names(beta.con.id.cov.out$con.var), ">=", con.var.med)
-    bin.var[ind.sm] <- paste(names(beta.con.id.cov.out$con.var), "<", con.var.med)
+    bin.var[ind.gr] <- paste(names(beta.con.id.cov.out$con.var), ">=", round(con.var.med,2))
+    bin.var[ind.sm] <- paste(names(beta.con.id.cov.out$con.var), "<", round(con.var.med,2))
     bin.var <- factor(bin.var)
     
     mod <- betadisper(as.dist(beta.con.id.cov.out$Ds[[i]]), bin.var)
     plot(mod, ellipse = TRUE, hull = FALSE, main = names(beta.con.id.cov.out$Ds)[i], xlab="PC 1", ylab="PC 2",
-         sub = sub.tit, col = c("blue2", "red2"), cex=1.5)
+         sub=NA, col = c("blue2", "red2"), mgp=c(2.5,1,0), cex=1.7, label.cex=1.3, cex.lab=1.2, cex.main=1.7)
+    mtext(sub.tit, side=1, line=3.8, cex=1.0)
   }
   
   plot(0, xaxt = 'n', yaxt = 'n', bty = 'n', pch = '', ylab = '', xlab = '')
-  legend("center", title = NULL, legend = levels(bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.5)
-  legend("bottom", paste("aGLMM-MiRKAT: ", p.value.0.1(out$aGLMMMiRKAT), sep=""), bty = "n", cex=1.5)
-  return(out)
+  legend("center", title = NULL, legend = levels(bin.var), fil = c("blue2", "red2", cex=2.5, box.lty=0), bty = "n", cex=1.6)
+  legend("bottom", paste("aGLMM-MiRKAT: ", p.value.0.1(out$aGLMMMiRKAT), sep=""), bty = "n", cex=1.6)
 }
 
 ###################
@@ -327,6 +329,7 @@ glmm.mirkat.con.cov <- function(beta.con.id.cov.out) {
 
 q.func <- function(out, method = c("BH", "BY")) {
   Q.value <- p.adjust(out$P.value, method = method)
+  
   return(cbind(out, Q.value))
 }
 
@@ -336,9 +339,6 @@ p.value.0.1 <- function(x, round.x = 3) {
   x[ind.0] <- "<.001"
   ind.1 <- which(x == "1.000" | x == 1)
   x[ind.1] <- ">.999"
+  
   return(x)
 }
-
-
-
-

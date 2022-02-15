@@ -1,6 +1,6 @@
 library(biomformat)
 library(phangorn)
-library(bios2mds)
+#library(bios2mds)
 
 preprocess.tax.tab = function(tax.tab){
   trans.tax.tab <- matrix(NA, nrow(tax.tab), 7)
@@ -95,34 +95,33 @@ biom.check.otu <- function(otu.table, tax.table, tre.data) {
 REFERENCE_CHECK <- function(data_transform = "", method_name = "", FDR = ""){
   reference_lists <- NULL
   if(data_transform == "CLR (Default)"){
-    reference_lists = c(reference_lists, "Aitchison J. The statistical analysis of compositional data. J R Statist Soc B. 1982;44(2):139-77.", "Martin-Fernandez JA, Hron K, Templ M, Filzmoser P, Palarea-Albaladejo J. Bayesian-multiplicative treatment of count zeros in compositional data sets. Statistical Modelling 2015:15(2):134-158.")
+    reference_lists = c(reference_lists, "Aitchison J. The statistical analysis of compositional data. J R Stat Soc Series B Stat Methodol. 1982;44(2):139-60.", "Martin-Fernandez J-A, Hron K, Templ M, Filzmoser P, Palarea-Albaladejo J. Bayesian-multiplicative treatment of count zeros in compositional data sets. Stat Modelling. 2015;15(2):134-58.")
   }else if(data_transform == "Proportion"){
-    reference_lists = c(reference_lists, "Martin-Fernandez JA, Hron K, Templ M, Filzmoser P, Palarea-Albaladejo J. Bayesian-multiplicative treatment of count zeros in compositional data sets. Statistical Modelling 2015:15(2):134-158.")
+    reference_lists = c(reference_lists, "Martin-Fernandez J-A, Hron K, Templ M, Filzmoser P, Palarea-Albaladejo J. Bayesian-multiplicative treatment of count zeros in compositional data sets. Stat Modelling. 2015;15(2):134-58.")
   }
   
   if(method_name == "Wilcoxon rank-sum test"){
-    reference_lists = c(reference_lists, "Mann HB, Whitney DR. On a test of whether one of two random variables is stochastically larger than the other. Ann Math Statist. 1947;18(1):50-60.")
+    reference_lists = c(reference_lists, "Mann HB, Whitney DR. On a test of whether one of two random variables is stochastically larger than the other. The Annals of Mathematical Statistics. 1947;18(1):50-60.")
   }else if(method_name == "LMM"){
-    reference_lists = c(reference_lists, "Laird NM, Ware JH. Random-effects models for longitudinal data. Biometrics. 1982:38:963-974.")
+    reference_lists = c(reference_lists, "Laird NM, Ware JH. Random-effects models for longitudinal data. Biometrics. 1982;38(4):963-74.")
   }else if(method_name == "MiRKAT"){
     reference_lists = c(reference_lists, 
-                        "Zhao N, Chen J, Carroll IM, Ringel-Kulka T, Epstein MP, Zhou H, Zhou JJ, Ringel Y, Li H, Wu MC. Testing in microbiome-profiling studies with MiRKAT, the microbiome regression-based kernel association test. Am J Hum Genet. 2015:96:5:797-807", 
-                        "Wilson N, Zhao N, Zhan X, Koh H, Fu W, Chen J, Li H, Wu MC, Plantinga AM. MiRKAT: kernel machine regression-based global association tests for the microbiome. Bioinformatics. 2020:37(11):1-3.")
+                        "Zhao N, Chen J, Carroll IM, Ringel-Kulka T, Epstein MP, Zhou H, Zhou JJ, Ringel Y, Li H, Wu MC. Testing in microbiome-profiling studies with MiRKAT, the microbiome regression-based kernel association test. Am J Hum Genet. 2015;96(5):797-807", 
+                        "Wilson N, Zhao N, Zhan X, Koh H, Fu W, Chen J, Li H, Wu MC, Plantinga AM. MiRKAT: kernel machine regression-based global association tests for the microbiome. Bioinformatics. 2021;37(11):1595-7.")
   }else if(method_name == "GLMM-MiRKAT"){
     reference_lists = c(reference_lists, 
-                        "Koh H, Li Y, Zhan X, Chen J, Zhao N. A distance-based kernel association test based on the generalized linear mixed model for correlated microbiome studies. Front Genet. 2019;458(10).", 
-                        "Wilson N, Zhao N, Zhan X, Koh H, Fu W, Chen J, Li H, Wu MC, Plantinga AM. MiRKAT: kernel machine regression-based global association tests for the microbiome. Bioinformatics. 2020;37(11):1-3.")
+                        "Koh H, Li Y, Zhan X, Chen J, Zhao N. A distance-based kernel association test based on the generalized linear mixed model for correlated microbiome studies. Front Genet. 2019;10:458.", 
+                        "Wilson N, Zhao N, Zhan X, Koh H, Fu W, Chen J, Li H, Wu MC, Plantinga AM. MiRKAT: kernel machine regression-based global association tests for the microbiome. Bioinformatics. 2021;37(11):1595-7.")
   }else if(method_name == "LMM"){
-    reference_lists = c(reference_lists, "Laird NM, Ware JH. Random-effects models for longitudinal data. Biometrics. 1982:38:963-974.")
+    reference_lists = c(reference_lists, "Laird NM, Ware JH. Random-effects models for longitudinal data. Biometrics. 1982;38(4):963-74.")
   }else if(method_name == "GLMM (Binomial)" | method_name == "GLMM (Negative Binomial)" | method_name == "GLMM (Beta)"){
-    reference_lists = c(reference_lists, "Breslow NE, Clayton DG. Approximate inference in generalized linear mixed models. J Am Stat Assoc. 1993:88(421):9-25.")
+    reference_lists = c(reference_lists, "Breslow NE, Clayton DG. Approximate inference in generalized linear mixed models. J Am Stat Assoc. 1993;88(421):9-25.")
   }else if(method_name == "GEE (Binomial)"){
-    reference_lists = c(reference_lists, "Liang KY, Zeger SL. Longitudinal data analysis using generalized linear models. Biometrika. 1986:73(1):13-22")
+    reference_lists = c(reference_lists, "Liang K-Y, Zeger SL. Longitudinal data analysis using generalized linear models. Biometrika. 1986;73(1):13-22.")
   }
   
   if(FDR == "Yes"){
-    reference_lists = c(reference_lists, "Benjamini Y, Hochberg Y. Controlling the false discovery rate: A practical and powerful approach to multiple testing. J R Statist 
-Soc B. 1995;57(1):289-300.")
+    reference_lists = c(reference_lists, "Benjamini Y, Hochberg Y. Controlling the false discovery rate: a practical and powerful approach to multiple testing. J R Stat Soc Series B Stat Methodol. 1995;57(1):289-300.")
   }
   
   if(length(reference_lists) == 0){
