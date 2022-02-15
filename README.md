@@ -21,7 +21,7 @@ In R terminal:
 ```
 library(shiny)
 
-runGithub("MiCloudGit", "wg99526", ref = "main")
+runGitHub("MiCloudGit", "wg99526", ref = "main")
 ```
 
 Rstudio is not required to run the code above.
