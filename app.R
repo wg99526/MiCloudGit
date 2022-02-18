@@ -164,7 +164,7 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
 {
   ui = dashboardPage(
     title = "MiCloud",
-    dashboardHeader(title = span(TITLE, style = "font-size: 20px"), titleWidth = 844),
+    dashboardHeader(title = span(TITLE, style = "float:left;font-size: 20px"), titleWidth = "100%"),
     dashboardSidebar(
       tags$script(JS("document.getElementsByClassName('sidebar-toggle')[0].style.visibility = 'hidden';")),
       sidebarMenu(id = "side_menu",
