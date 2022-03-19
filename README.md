@@ -12,9 +12,9 @@ The application is available at:
 
 URL: http://223.194.200.160:3838/
 
-# Getting Started
+## Getting Started
 
-## Launch App
+### Launch App
 The web application supports up to five concurrent users. If the application is too crowded, you can launch the app from your computer by typing the following command after installing prerequisite packages.
 
 In R terminal:
@@ -24,9 +24,9 @@ library(shiny)
 runGitHub("MiCloudGit", "wg99526", ref = "main")
 ```
 
-Rstudio is not required to run the code above.
+Rstudio is not required.
 
-## Prerequisites
+### Prerequisites
 
 shiny
 ```
@@ -68,3 +68,12 @@ list.of.packages <- c('seqinr', 'shinydashboard', 'dashboardthemes', 'tidyverse'
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
 ```
+
+
+## Data Input
+
+### Example Data
+Two example sets (16s rRNA and Shotgun sequencing data) are available in the form of phyloseq and individual data. The datasets will be downloaded as 'biom.Rdata' when 'phyloseq' is selected and 'biom.zip' when 'individual data' is selected. The 'biom.zip' file contains feature table (otu.tab.txt), taxonomic table (tax.tab.txt), metadata/sample information (sam.dat.txt), and phylogenetic tree (tree.tre).
+
+## Quality Control
+
