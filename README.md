@@ -25,10 +25,10 @@ runGitHub("MiCloudGit", "wg99526", ref = "main")
 Rstudio is not required to launch MiCloud.
 
 ## Data Input
-Four components are required to get started: feature table, taxonomic table, metadata, and phylogenetic tree. Users can upload them individually as tab-limited text (.txt) and comma-delimited text (.csv), or in a single integrated file (phyloseq) as biological observation matrix (BIOM) format.
+Four components are required to get started: feature table, taxonomic table, metadata, and phylogenetic tree. Users can upload them individually or in a single integrated file, called phyloseq (McMurdie and Holmes, 2013).
 
 ### Example Data
-Two example sets (16s rRNA and Shotgun sequencing data) are available. The datasets will be downloaded as 'biom.Rdata' for phyloseq and 'biom.zip' for individual data. The 'biom.zip' file contains feature table (otu.tab.txt), taxonomic table (tax.tab.txt), metadata/sample information (sam.dat.txt), and phylogenetic tree (tree.tre).
+Two example sets (16s rRNA and Shotgun sequencing data) are available. The datasets will be downloaded as 'biom.Rdata' for phyloseq and 'biom.zip' for individual data. 'biom.zip' file contains feature table (otu.tab.txt), taxonomic table (tax.tab.txt), metadata/sample information (sam.dat.txt), and phylogenetic tree (tree.tre). The example data is UK twin study data (Goodrich et al, 2014) and publicly available in the European Bioinformatics Institute (EMBL-EBI) database. 
 
 ## Quality Control
 
