@@ -1,6 +1,5 @@
 # MiCloud
-Title: A web-based microbiome data analysis tool for binary or continuous trait, 
-cross-sectional or longitudinal study, and with or without covariate adjustment
+Title: A unified web platform for comprehensive microbiome data analysis
 
 Maintainer: Won Gu won.gu@stonybrook.edu
 
@@ -13,6 +12,7 @@ The application is available at:
 
 URL: http://223.194.200.160:3838/
 
+# Getting Started
 
 ## Launch App
 The web application supports up to five concurrent users. If the application is too crowded, you can launch the app from your computer by typing the following command after installing prerequisite packages.
