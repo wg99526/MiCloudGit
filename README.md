@@ -31,10 +31,10 @@ Four components are required to get started: feature table, taxonomic table, met
 Phyloseq is a data format that integrates all four components (feature table, taxonomic table, metadata, and phylogenetic tree) in a single R object. Users can upload it using .Rdata and .rds files.
 
 ### Individual Data
-1. Feature table (.txt, .csv, .biom) should contain counts
-2. Taxonomic table (.txt, .csv) should contain taxonomic names
-3. Metadata/Sample (.txt, .csv) shuold contain variables for the subjects about host phenotypes, medical interventions, disease status or environmental/behavioral factors
-4. Phylogenetic tree (.tre, .nwk) should be rooted tree
+1. Feature table (.txt, .csv, .biom) should contain counts, where rows are features (OTUs or ASVs) and columns are subjects.
+2. Taxonomic table (.txt, .csv) should contain taxonomic names, where rows are features and columns are seven taxonomic ranks.
+3. Metadata/Sample (.txt, .csv) shuold contain variables for the subjects about host phenotypes, medical interventions, disease status or environmental/behavioral factors, where rows are subjects and columns are variables.
+4. Phylogenetic tree (.tre, .nwk) should be rooted tree. Otherwise, MiCloud automatically roots the tree through midpoint rooting (phangorn::midpoint). The tip labels of the phylogenetic tree are feature IDs.
 
 
 ### Example Data
