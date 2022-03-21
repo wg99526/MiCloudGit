@@ -28,10 +28,10 @@ Rstudio is not required to launch MiCloud.
 Four components are required to get started: feature table, taxonomic table, metadata, and phylogenetic tree. Users can upload them in individually, or phyloseq (McMurdie and Holmes, 2013). More information on compatible data format can be found below.
 
 ### Individual Data
- - Feature table (.txt, .csv, .biom) is the count table where rows are OTUs or ASVs and columns are subjects.  
- - Taxonomic table (.txt, .csv) contains taxonomic names for microbial features (OTUs or ASVs) on seven taxonomic ranks (Kingdom/Domain, Phylum, Class, Order, Family, Genus and Species.)  
- - Metadata/Sample (.txt, .csv) contains variables for the subjects (i.e., host phenotypes, medical interventions, health/disease status, demographics).  
- - Phylogenetic tree (.tre, .nwk) represents evolutionary relationships across microbial features (OTUs or ASVs).  
+ - **Feature table (.txt, .csv, .biom)** is the count table where rows are OTUs or ASVs and columns are subjects.  
+ - **Taxonomic table (.txt, .csv)** contains taxonomic names for microbial features (OTUs or ASVs) on seven taxonomic ranks (Kingdom/Domain, Phylum, Class, Order, Family, Genus and Species.)  
+ - **Metadata/Sample (.txt, .csv)** contains variables for the subjects (i.e., host phenotypes, medical interventions, health/disease status, demographics).  
+ - **Phylogenetic tree (.tre, .nwk)** represents evolutionary relationships across microbial features (OTUs or ASVs).  
 
 ### Phyloseq
 Phyloseq is a data format that integrates all the four components above (feature table, taxonomic table, metadata, and phylogenetic tree) in a single R object. Users can upload it using .Rdata and .rds files.
