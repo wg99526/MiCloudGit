@@ -32,7 +32,7 @@ Four components are required to get started: feature table, taxonomic table, met
 **Taxonomic table (.txt, .csv)** contains taxonomic names for microbial features (OTUs or ASVs) on seven taxonomic ranks.  
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; - Kingdom/domain, phylum, class, order, family, genus and species.  <br />
 **Metadata/Sample (.txt, .csv)** contains variables for the subjects  
-&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&ensp; (i.e., host phenotypes, medical interventions, health/disease status, demographics).  <br />
+&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; (i.e., host phenotypes, medical interventions, health/disease status, demographics).  <br />
 **Phylogenetic tree (.tre, .nwk)** represents evolutionary relationships across microbial features (OTUs or ASVs).  
 
 ### Phyloseq
