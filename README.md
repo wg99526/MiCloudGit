@@ -25,19 +25,24 @@ runGitHub("MiCloudGit", "wg99526", ref = "main")
 Rstudio is not required to launch MiCloud.
 
 ## Data Input
-Four components are required to get started: feature table, taxonomic table, metadata, and phylogenetic tree. Users can upload them in phyloseq (McMurdie and Holmes, 2013) or individually. More information on compatible data format can be found below.
-
-### Phyloseq
-Phyloseq is a data format that integrates all four components (feature table, taxonomic table, metadata, and phylogenetic tree) in a single R object. Users can upload it using .Rdata and .rds files.
+Four components are required to get started: feature table, taxonomic table, metadata, and phylogenetic tree. Users can upload them in individually, or phyloseq (McMurdie and Holmes, 2013). More information on compatible data format can be found below.
 
 ### Individual Data
-1) Feature table (.txt, .csv, .biom) 
-2) Taxonomic table (.txt, .csv) 
-3) Metadata/Sample (.txt, .csv) 
-4) Phylogenetic tree (.tre, .nwk)
+##### Feature table (.txt, .csv, .biom)
+- The count table where rows are OTUs or ASVs and columns are subjects.
+##### Taxonomic table (.txt, .csv) 
+- Contains taxonomic names for microbial features (OTUs or ASVs) on seven taxonomic ranks - kingdom/domain, phylum, class, order, family, genus and species
+##### Metadata/Sample (.txt, .csv) 
+- Contains variables for the subjects (i.e., host phenotypes, medical interventions, health/disease status, demographics)
+##### Phylogenetic tree (.tre, .nwk) 
+- Represents evolutionary relationships across microbial features (OTUs or ASVs)
+
+### Phyloseq
+Phyloseq is a data format that integrates all the four components above (feature table, taxonomic table, metadata, and phylogenetic tree) in a single R object. Users can upload it using .Rdata and .rds files.
 
 ### Example Data
-Two example sets (16s rRNA and Shotgun sequencing data) are available. The datasets will be downloaded as 'biom.Rdata' for phyloseq and 'biom.zip' for individual data. 'biom.zip' file contains feature table (otu.tab.txt), taxonomic table (tax.tab.txt), metadata/sample information (sam.dat.txt), and phylogenetic tree (tree.tre). The example data is UK twin study data (Goodrich et al, 2014) and publicly available in the European Bioinformatics Institute (EMBL-EBI) database. 
+Two example sets are available and each can be downloaded by clicking "16S" and "Shotgun". The first example data, "16S", is UK twin study data (Goodrich et al, 2014) and publicly available in the European Bioinformatics Institute (EMBL-EBI) database. "Shotgun", is the data used for gut microbiota and metabolite study (Frankel et al, 2017). The datasets will be downloaded as 'biom.Rdata' for phyloseq and 'biom.zip' for individual data. 'biom.zip' file contains four text files - otu.tab.txt, tax.tab.txt, sam.dat.txt, and tree.tre, each representing feature table, taxonomic table, metadata/sample, and phylogenetic tree.
+
 
 ## Quality Control
 
