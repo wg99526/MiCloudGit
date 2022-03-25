@@ -13,7 +13,7 @@ The application is available at:
 URL: http://223.194.200.160:3838/app/micloud
 
 ## Launch App
-The web application supports up to ten concurrent users. If the application is too crowded, you can launch the app from your computer by typing the following command after installing prerequisite packages.
+The web application supports up to ten concurrent users. When the application is too crowded, you can launch the app from your computer by typing the following command after installing prerequisite packages.
 
 In R terminal:
 ```
