@@ -10,7 +10,7 @@ MiCloud is a web application for statistical analysis of microbiome data. It pro
 
 The application is available at:
 
-URL: http://223.194.200.160:3838/
+URL: http://223.194.200.160:3838/app/micloud
 
 ## Launch App
 The web application supports up to five concurrent users. If the application is too crowded, you can launch the app from your computer by typing the following command after installing prerequisite packages.
