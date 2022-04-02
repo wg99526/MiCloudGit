@@ -42,17 +42,16 @@ Two example sets are available and each can be downloaded by clicking "16S" and 
 
 ## Quality Control
 1. Kingdom  
-Kingdom is set as Bacteria by default, but users can type different kingdom of their interest. However, if the kingdom cannot be found in the data, MiCloud will throw an error message "Error: Please select valid Kingdom."
+Users can change kingdom of their interest. Kingdom is defined as Bacteria by default, but it can be changed by simply typing different kingdom. However, MiCloud will throw an error message "Error: Please select valid Kingdom" when the kingdom cannot be found in the data. 
 
 2. Library Size  
-Users can remove subjects that have low library size. MiCloud suggests to remove subjects of total read counts less than 3000, but it is adjustable using slider. The maximum value of the slider represents the 3rd quaritle of the data.
+Users can remove subjects that have low library size. MiCloud suggests to remove subjects of total read counts less than 3000, but it is adjustable using slider. The maximum value of the slider represents the third quaritle of the data.
 
 3. Mean Proportion  
-Users can remove features (OTUs or ASVs) that have low mean proportion. MiCloud suggests to remove features of mean proportion less than 0.002%, but users can adjust the standard using slider. The maximum value of the slider represents the 3rd quaritle of the data.
+Users can remove features (OTUs or ASVs) that have low mean proportion. MiCloud suggests to remove features of mean proportion less than 0.002%, but users can adjust the standard using slider. The maximum value of the slider represents the third quaritle of the data.
 
 4. Erroneous Taxonomic Names  
-“uncultured”, “incertae”, “Incertae”, “unidentified”, “unclassified”, “unknown”, “metagenome”, “gut 
-metagenome”, “mouse gut metagenome”.
+Users can define list of names to delete from taxonomic table and there are two ways; remove by complete match and by partial match. For complete match, taxonomic names that are completely matched to specified patterns will be removed. By default, the patterns are "metagenome", "gut metagenome" and "mouse gut metagenome" but users can add more by typing into the slot. For partial match, taxonomic names that include any of the patterns specified will be removed. The patterns are “uncultured”, “incertae”, “Incertae”, “unidentified”, “unclassified”, “unknown” and “metagenome”, but again, users can add more patterns.
 
 
 
