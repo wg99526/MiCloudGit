@@ -41,16 +41,16 @@ Two example sets are available and each can be downloaded by clicking "16S" and 
 
 
 ## Quality Control
-1. Kingdom
+1. Kingdom  
 Kingdom is set as Bacteria by default, but users can type different kingdom of their interest. However, if the kingdom cannot be found in the data, MiCloud will throw an error message "Error: Please select valid Kingdom."
 
-2. Library Size
+2. Library Size  
 Users can remove subjects that have low library size. MiCloud suggests to remove subjects of total read counts less than 3000, but it is adjustable using slider. The maximum value of the slider represents the 3rd quaritle of the data.
 
-3. Mean Proportion
+3. Mean Proportion  
 Users can remove features (OTUs or ASVs) that have low mean proportion. MiCloud suggests to remove features of mean proportion less than 0.002%, but users can adjust the standard using slider. The maximum value of the slider represents the 3rd quaritle of the data.
 
-4. Erroneous Taxonomic Names
+4. Erroneous Taxonomic Names  
 “uncultured”, “incertae”, “Incertae”, “unidentified”, “unclassified”, “unknown”, “metagenome”, “gut 
 metagenome”, “mouse gut metagenome”.
 
