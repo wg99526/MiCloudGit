@@ -51,8 +51,7 @@ Users can remove subjects that have low library size. MiCloud suggests to remove
 Users can remove features (OTUs or ASVs) that have low mean proportion. MiCloud suggests to remove features of mean proportion less than 0.002%, but users can adjust the standard using slider. The maximum value of the slider represents the third quaritle of the data.
 
 4. Erroneous Taxonomic Names  
-Users can define list of names to delete from taxonomic table and there are two ways; remove by complete match and by partial match. For complete match, taxonomic names that are completely matched to specified patterns will be removed. By default, the patterns are "metagenome", "gut metagenome" and "mouse gut metagenome" but users can add more by typing into the slot. For partial match, taxonomic names that include any of the patterns specified will be removed. The patterns are “uncultured”, “incertae”, “Incertae”, “unidentified”, “unclassified”, “unknown” and “metagenome”, but again, users can add more patterns.
-
+Users can define names to delete from taxonomic table by complete match and partial match. For complete match, taxonomic names that are completely matched to specified patterns ("metagenome", "gut metagenome" and "mouse gut metagenome" by default and users can add new patterns) will be removed. For partial match, taxonomic names that include any of the patterns specified (“uncultured”, “incertae”, “Incertae”, “unidentified”, “unclassified”, “unknown” and “metagenome” by default and users can add new patterns) will be removed. 
 
 
 ### Prerequisites
