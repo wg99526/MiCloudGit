@@ -53,6 +53,15 @@ Users can remove features (OTUs or ASVs) that have low mean proportion. MiCloud 
 4. **Erroneous Taxonomic Names**  
 Users can define names to delete from taxonomic table by complete match and partial match. For complete match, taxonomic names that are completely matched to specified patterns ("metagenome", "gut metagenome" and "mouse gut metagenome" by default and users can add new patterns) will be removed. For partial match, taxonomic names that include any of the patterns specified (“uncultured”, “incertae”, “Incertae”, “unidentified”, “unclassified”, “unknown” and “metagenome” by default and users can add new patterns) will be removed. 
 
+During these processes, sample size and numbers of features (OTUs or ASVs), phyla, classes, orders, families, genera and species of the microbiome will be  shown on the summary boxes on top. Also, library sizes across subjects and mean proportions across features will be displayed in adjustable histograms and box plots.
+
+
+## Ecological Analysis
+### Diversity Calculation
+
+
+## Taxonomical Analysis
+### Data Transformation
 
 ### Prerequisites
 
