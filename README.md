@@ -12,17 +12,15 @@ The application is available at:
 
 URL: http://223.194.200.160:3838/app/micloud
 
-## Launch App
-The web application supports up to ten concurrent users. When the application is too crowded, you can launch the app from your computer by typing the following command after installing prerequisite packages.
+## Launch App 
+After meeting the prerequisites, users can launch the app in their local computer by typing the following command to R terminal:
 
-In R terminal:
 ```
 library(shiny)
 
 runGitHub("MiCloudGit", "wg99526", ref = "main")
 ```
 
-Rstudio is not required to launch MiCloud.
 
 ### Prerequisites
 
