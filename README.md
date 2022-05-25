@@ -11,8 +11,8 @@ MiCloud is a web application for statistical analysis of microbiome data. It pro
 The application is available at:
 
 URLs
-*Web Platform: http://223.194.200.160:3838/app/micloud
-*Local Implementation: https://github.com/wg99526/MiCloudGit
+- Web Platform: http://223.194.200.160:3838/app/micloud
+- Local Implementation: https://github.com/wg99526/MiCloudGit
 
 ## Launch App 
 Users can launch the app in their local computer by typing the following command to R terminal:
