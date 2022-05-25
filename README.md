@@ -6,7 +6,13 @@ Maintainer: Won Gu won.gu@stonybrook.edu
 Depends: R (≥ 3.5)
 
 ## Description
-MiCloud is a web application for statistical analysis of microbiome data. It provides user-friendly environment with extended options for data processsing, analysis and graphical procedures. MiCloud can conduct ecological (alpha- and beta- diversity) and taxonomic analyses for binary or continuous trait, cross-sectional or longitudinal study, and with or without covariate adjustments.
+MiCloud is a unified web platform for comprehensive microbiome data analysis. MiCloud provides step-by-step user-friendly web environments for a breadth of data processing, analytic and graphical procedures. MiCloud performs both ecological (alpha- and beta-diversity) and taxonomical (phylum, class, order, family, genus, species) analyses for various types of host phenotypes (or disease status) and study designs with or without covariate adjustment(s). More details are as follows.
+
+- Interactive procedures for various data inputs (.rdata, .rds, .biom, .txt, .csv, .tsv, .tre), quality controls (kingdom, library size, mean proportion, taxonomic name) and data transformations (alpha- and beta-diversity, rarefaction, proportion, centered log-ratio).
+- Comparative analysis for both ecological (alpha- and beta-diversity) indices and microbial taxa in relative abundance (phylum, class, order, family, genus, species).
+- Comparative analysis for both binary and continuous traits of host phenotypes (or medical interventions, disease status or environmental/behavioral factors).
+- Comparative analysis with or without covariate (e.g., age, gender) adjustment(s) for either cross-sectional or longitudinal/family-based microbiome study design.
+- Adjustable/downloadable/publishable data, tables and graphs.
 
 URLs
 - Web Platform: http://223.194.200.160:3838/app/micloud
