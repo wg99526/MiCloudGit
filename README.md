@@ -14,7 +14,7 @@ MiCloud is a unified web platform for comprehensive microbiome data analysis. Mi
 - Comparative analysis with or without covariate (e.g., age, gender) adjustment(s) for either cross-sectional or longitudinal/family-based microbiome study design.
 - Adjustable/downloadable/publishable data, tables and graphs.
 
-&nbsp;
+<br/>
 URLs
 - Web Platform: http://223.194.200.160:3838/app/micloud
 - Local Implementation: https://github.com/wg99526/MiCloudGit
