@@ -25,7 +25,7 @@ URLs
 Reference: Gu, W., Moon, J., Chisina, C., Kang, B., Park, T., Koh, H. MiCloud: A unified web platform for comprehensive microbiome data analysis. (Under review)
 
 ## Launch App 
-Users can launch the app in their local computer by typing the following command to R terminal:
+Users can launch MiCloud in their local computer by typing following commands:
 
 ```
 install.packages("shiny")
