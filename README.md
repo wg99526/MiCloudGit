@@ -8,8 +8,6 @@ Depends: R (≥ 3.5)
 ## Description
 MiCloud is a web application for statistical analysis of microbiome data. It provides user-friendly environment with extended options for data processsing, analysis and graphical procedures. MiCloud can conduct ecological (alpha- and beta- diversity) and taxonomic analyses for binary or continuous trait, cross-sectional or longitudinal study, and with or without covariate adjustments.
 
-The application is available at:
-
 URLs
 - Web Platform: http://223.194.200.160:3838/app/micloud
 - Local Implementation: https://github.com/wg99526/MiCloudGit
