@@ -1,5 +1,5 @@
 # MiCloud
-Title: A unified web platform for comprehensive microbiome data analysis
+Title: MiCloud: A Unified Web Platform for Comprehensive Microbiome Data Analysis
 
 Maintainer: Won Gu won.gu@stonybrook.edu
 
