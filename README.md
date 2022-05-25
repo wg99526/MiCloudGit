@@ -18,6 +18,9 @@ URLs
 - Web Platform: http://223.194.200.160:3838/app/micloud
 - Local Implementation: https://github.com/wg99526/MiCloudGit
 
+
+Reference: Gu, W., Moon, J., Chisina, C., Kang, B., Park, T., Koh, H. MiCloud: A unified web platform for comprehensive microbiome data analysis. (Under review)
+
 ## Launch App 
 Users can launch the app in their local computer by typing the following command to R terminal:
 
