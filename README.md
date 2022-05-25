@@ -36,7 +36,7 @@ runGitHub("MiCloudGit", "wg99526", ref = "main")
 ```
 
 
-## Pre-requisites
+## Prerequisites
 
 phyloseq
 ```
