@@ -123,6 +123,10 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
                                      " > identical(rownames(otu.tab), tree$tip.label)", br(), 
                                      " > identical(colnames(otu.tab), rownames(sam.dat))", style = "font-size:11pt")
   
+  EXTERNAL_RESOURCE_COMMENT = p("MiCloud does not take raw sequence data. For the raw sequence data processing and microbiome profiling, we recommend following popular and well-established bioinformatic pipelines.", br(), br(),
+                              "For web platforms:", p(" ", style = "margin-bottom: 10px;"),"Nephele (https://nephele.niaid.nih.gov), Qiita (https://qiita.ucsd.edu), QIIME2 (q2studio) (https://qiime2.org) and PUMAA (https://sites.google.com/g.ucla.edu/pumaa)", br(), br(),
+                              "For command line interfaces:", p(" ", style = "margin-bottom: 10px;"), "QIIME (http://qiime.org), QIIME2 (q2cli) (https://qiime2.org), MG-RAST (https://www.mg-rast.org), Mothur (https://mothur.org), MEGAN (http://ab.inf.uni-tuebingen.de/software/megan6) and MetaPhlAn (https://huttenhower.sph.harvard.edu/metaphlan)", style = "font-size:11pt")
+  
   QC_KINGDOM_COMMENT = p("A microbial kingdom to be analyzed. Default is 'Bacteria' for 16S data. Alternatively, you can type 'Fungi' for ITS data 
                          or any other kingdom of interest for shotgun metagenomic data.", style = "font-size:11pt")
   QC_LIBRARY_SIZE_COMMENT1 = p("Remove subjects that have low library sizes (total read counts). Default is 3,000.", style = "font-size:11pt")
@@ -560,7 +564,9 @@ server = function(input, output, session) {
                 downloadButton("downloadData", "Shotgun", width = '30%', style = "color:black; background-color: red2"),
                 br(),br(),
                 INPUT_PHYLOSEQ_COMMENT2
-            )
+            ),
+            box(title = strong("External Resource", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
+                EXTERNAL_RESOURCE_COMMENT)
           )
         })
       } else if (input$inputOption == "Individual Data") {
@@ -598,7 +604,9 @@ server = function(input, output, session) {
                 downloadButton("downloadZip", "Shotgun", width = '30%', style = "color:black; background-color: red2"),
                 br(),br(),
                 INPUT_INDIVIDUAL_DATA_COMMENT2
-            )
+            ),
+            box(title = strong("External Resource", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
+                EXTERNAL_RESOURCE_COMMENT)
           )
         })
       }
