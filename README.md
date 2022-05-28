@@ -44,7 +44,7 @@ runGitHub("MiCloudGit", "wg99526", ref = "main")
 
 # Troubleshooting Tips
 
-If you have any problems for using MiCloud, please report in Issues (https://github.com/wg99526/MiCloudGit/issues) or email Ms. Won Gu (won.gu@stonybrook.edu).
+If you have any problems for using MiCloud, please report in Issues (https://github.com/wg99526/MiCloudGit/issues) or email Won Gu (wpg5129@psu.edu).
 
 
 # External Resources
