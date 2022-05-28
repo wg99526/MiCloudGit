@@ -2,7 +2,7 @@
 
 Title: MiCloud: A Unified Web Platform for Comprehensive Microbiome Data Analysis
 
-Version: 1.0
+Version: 1.21
 
 Date: 2022-05-25
 
