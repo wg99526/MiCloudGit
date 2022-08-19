@@ -4,7 +4,7 @@ list.of.packages <- c('seqinr', 'shinydashboard', 'dashboardthemes', 'tidyverse'
                       'DT', 'htmltools', 'phangorn', 'bios2mds', 'zip', 'zCompositions', 'dplyr', 'forestplot', 'quantreg', 'fossil', 'picante',
                       'entropart', 'lme4', 'lmerTest', 'broom.mixed', 'gee', 'geepack', 'dirmult', 'robustbase', 'robCompositions', 'BiasedUrn',
                       'CompQuadForm', 'GUniFrac', 'ecodist', 'MiRKAT', 'gridExtra', 'ggplot2', 'patchwork', 'ggthemes', 'erer', 'DiagrammeR', 'stringr',
-                      'devtools', 'betareg', 'reticulate', 'nlme', 'glmmTMB', 'glmm', 'remotes', 'gridGraphics', 'compositions')
+                      'devtools', 'betareg', 'reticulate', 'nlme', 'glmmTMB', 'glmm', 'remotes', 'gridGraphics', 'compositions', 'kableExtra', 'modelr')
 
 new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
 if(length(new.packages)) install.packages(new.packages)
@@ -31,6 +31,8 @@ library(htmltools)
 library(biomformat)
 library(phangorn)
 library(bios2mds)
+library(kableExtra)
+library(modelr)
 library(zip)
 
 source("Source/MiDataProc.Data.Upload.R")
