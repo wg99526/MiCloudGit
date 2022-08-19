@@ -25,7 +25,7 @@ Depends: R(>= 3.5), 'phyloseq', 'biomformat', 'MiRKAT', 'GLMM-MiRKAT', 'NBZIMM',
  
 ## References
 
-* Gu W, Moon J, Chisina C, Kang B, Park T, Koh H (2022) MiCloud: A unified web platform for comprehensive microbiome data analysis. PLoS ONE 17(8): e0272354. https://doi.org/10.1371/ journal.pone.0272354
+* Gu W, Moon J, Chisina C, Kang B, Park T, Koh H (2022) MiCloud: A unified web platform for comprehensive microbiome data analysis. PLoS ONE 17(8): e0272354. https://doi.org/10.1371/journal.pone.0272354
 
 # Prerequites
 
