@@ -11,7 +11,7 @@ if(length(new.packages)) install.packages(new.packages)
 
 if(!require('phyloseq')) remotes::install_github('joey711/phyloseq')
 if(!require('biomformat')) remotes::install_github('joey711/biomformat')
-if(!require('GLMM-MiRKAT')) remotes::install_github('hk1785/GLMM-MiRKAT')
+if(!require('GLMM-MiRKAT')) remotes::install_github('hk1785/GLMM-MiRKAT', force = T)
 if(!require('NBZIMM')) remotes::install_github('nyiuab/NBZIMM')
 
 
