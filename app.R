@@ -61,7 +61,7 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
   HOME_COMMENT4 = ("Comparative analysis with or without covariate (e.g., age, gender) adjustment(s) for either 
                    cross-sectional or longitudinal/family-based microbiome study design.")
   HOME_COMMENT5 = ("Adjustable/downloadable/publishable data, tables and graphs.")
-  HOME_COMMENT6 = p("Reference: Gu, W., Moon, J., Chisina, C., Kang, B., Park, T., Koh, H. MiCloud: A unified web platform for comprehensive microbiome data analysis. (Under review)", style = "font-size:13pt")
+  HOME_COMMENT6 = p("Reference: Gu W, Moon J, Chisina C, Kang B, Park T, Koh H (2022) MiCloud: A unified web platform for comprehensive microbiome data analysis. PLoS ONE 17(8): e0272354. https://doi.org/10.1371/journal.pone.0272354", style = "font-size:13pt")
   
   INPUT_PHYLOSEQ_COMMENT1 = p("Description:", br(), br(), "This should be an '.Rdata' or '.rds' file, and the data should be in 'phyloseq' format (see ", 
                               a(tags$u("https://bioconductor.org/packages/release/bioc/html/phyloseq.html"), style = "color:red3"),
@@ -158,7 +158,7 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
                       "2. Chen J, Bittinger K, Charlson ES, Hoffmann C, Lewis J, Wu GD., et al. Associating microbiome composition with environmental 
                       covariates using generalized UniFrac distances. Bioinformatics. 2012;28(16):2106-13.", br(),
                       "3. Jaccard P. The distribution of the flora in the alpine zone. New Phytol. 1912;11(2):37-50.", br(),
-                      "4. Lozupone CA, Hamady M, Kelley ST, Knight R. Quantitative and qualitative 棺-diversity measures lead to 
+                      "4. Lozupone CA, Hamady M, Kelley ST, Knight R. Quantitative and qualitative β-diversity measures lead to 
                       different insights into factors that structure microbial communities. Appl Environ Microbiol. 2007;73(5):1576-85.", br(),
                       "5. Lozupone CA, Knight R. UniFrac: A new phylogenetic method for comparing microbial communities. Appl Environ Microbiol. 2005;71(12):8228-35.")
   DATA_TRANSFORM_COMMENT = p("Transform the data into four different formats 1) count, 2) count (rarefied), 3) proportion, 
@@ -215,189 +215,189 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
                          selectInput("inputOption", h4(strong("Data Type?")), c("Choose one" = "", "Phyloseq", "Individual Data"), width = '30%'),
                          div(id = "optionsInfo", tags$p("You can choose phyloseq or individual data.", style = "font-size:11pt"), style = "margin-top: -15px"),
                          uiOutput("moreOptions"))),
-                 column(width = 6, style='padding-left:0px', uiOutput("addDownloadinfo"))),
-         
-         ##### QC ####
-         tabItem(tabName = "step2", br(), 
-                 sidebarLayout(
-                   position = "left",
-                   sidebarPanel(width = 3,
-                                textInput("kingdom", h4(strong("Bacteria?")), value = "Bacteria"),
-                                QC_KINGDOM_COMMENT,
-                                tags$style(type = 'text/css', '#slider1 .irs-grid-text {font-size: 1px}'),
-                                tags$style(type = 'text/css', '#slider2 .irs-grid-text {font-size: 1px}'), 
-                                 
-                                sliderInput("slider1", h4(strong("Library Size?")), min=0, max=10000, value = 3000, step = 1000),
-                                QC_LIBRARY_SIZE_COMMENT1,
-                                QC_LIBRARY_SIZE_COMMENT2,
-                                 
-                                sliderInput("slider2", h4(strong("Mean Proportion?")), min = 0, max = 0.1, value = 0.002, step = 0.001,  post  = " %"),
-                                QC_MEAN_PROP_COMMENT1,
-                                QC_MEAN_PROP_COMMENT2,
-                                
-                                br(),
-                                p(" ", style = "margin-bottom: -20px;"),
-                                
-                                h4(strong("Erroneous Taxonomic Names?")),
-                                textInput("rem.str", label = "Complete Match", value = ""),
-                                QC_TAXA_NAME_COMMENT1,
-                                 
-                                textInput("part.rem.str", label = "Partial Match", value = ""),
-                                QC_TAXA_NAME_COMMENT2,
-                                 
-                                actionButton("run", (strong("Run!")), class = "btn-info"), br(), br(),
-                                uiOutput("moreControls")),
-                   mainPanel(width = 9,
-                             fluidRow(width = 12,
-                                      status = "primary", solidHeader = TRUE, 
-                                      valueBoxOutput("sample_Size", width = 3),
-                                      valueBoxOutput("OTUs_Size", width = 3),
-                                      valueBoxOutput("phyla", width = 3),
-                                      valueBoxOutput("classes", width = 3)),
-                             fluidRow(width = 12, 
-                                      status = "primary", solidHeader = TRUE,
-                                      valueBoxOutput("orders", width = 3),
-                                      valueBoxOutput("families", width = 3),
-                                      valueBoxOutput("genera", width = 3),
-                                      valueBoxOutput("species", width = 3)),
-                             fluidRow(style = "position:relative",
-                                      tabBox(width = 6, title = strong("Library Size", style = "color:black"), 
-                                             tabPanel("Histogram",
-                                                      plotlyOutput("hist"),
-                                                      sliderInput("binwidth", "# of Bins:",min = 0, max = 100, value = 50, width = "100%"),
-                                                      chooseSliderSkin("Round", color = "#112446")),
-                                             tabPanel("Box Plot", 
-                                                      plotlyOutput("boxplot"))),
-                                      tabBox(width = 6, title = strong("Mean Proportion", style = "color:black"), 
-                                             tabPanel("Histogram",
-                                                      plotlyOutput("hist2"),
-                                                      sliderInput("binwidth2", "# of Bins:",min = 0, max = 100, value = 50, width = "100%"),
-                                                      chooseSliderSkin("Round", color = "#112446")),
-                                             tabPanel("Box Plot",
-                                                      plotlyOutput("boxplot2"))))))),
-         
-         ##### DIVERSITY Calculation ####
-         tabItem(tabName = "divCalculation", br(),
-                 column(width = 6, style = 'padding-left:0px',
-                        box(title = strong("Diversity Calculation", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
-                            ALPHA_COMMENT, 
-                            BETA_COMMENT, 
-                            actionButton("divCalcRun", (strong("Run!")), class = "btn-info")),
-                        uiOutput("divCalcDownload")),
-                 column(width = 6, style='padding-left:0px',
-                        box(title = strong("References", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
-                            p("Alpha Diversity", style = "font-size:12pt"),
-                            ALPHA_REFERENCES,
-                            p("Beta Diversity", style = "font-size:12pt"),
-                            BETA_REFERENCES))),
-         
-         ##### ALPHA DIVERSITY ####
-         tabItem(tabName = "alphaDivanalysis", br(),
-                 fluidRow(
-                   tabBox(width = 12,
-                          tabPanel(
-                            title ="Cross-Sectional",
-                            sidebarLayout(
-                              position = "left",
-                              sidebarPanel(width = 3,
-                                           uiOutput("primvars"),
-                                           uiOutput("prim_vars_types"),
-                                           uiOutput("covariates"), br(), 
-                                           uiOutput("alpha_downloadTable"),
-                                           uiOutput("alpha_references")),
-                              mainPanel(width = 9,
-                                        fluidRow(width = 12, 
-                                                 uiOutput("alpha_display_results"))))),
-                          tabPanel(
-                            title ="Longitudinal", 
-                            sidebarLayout(
-                              position = "left",
-                              sidebarPanel(width = 3, 
-                                           uiOutput("primvars_long"),
-                                           uiOutput("prim_vars_types_long"),
-                                           uiOutput("covariates_long"), br(), 
-                                           uiOutput("alpha_downloadTablelong"),
-                                           uiOutput("alpha_references_long")),
-                              mainPanel(width = 9,
-                                        fluidRow(width = 12, 
-                                                 uiOutput("alpha_display_resultslong")))))))),
-         
-         ##### BETA DIVERSITY ####
-         tabItem(tabName = "betaDivanalysis", br(),
-                 fluidRow(
-                   tabBox(width = 12,
-                          tabPanel(
-                            title ="Cross-Sectional",
-                            sidebarLayout(
-                              position = "left",
-                              sidebarPanel(width = 3,
-                                           uiOutput("beta_primvar_cross"),
-                                           uiOutput("beta_prim_vars_types_cross"),
-                                           uiOutput("beta_covariates_cross"), br(), 
-                                           uiOutput("beta_downloadTable"),
-                                           uiOutput("beta_references")),
-                              mainPanel(width = 9,
-                                        fluidRow(width = 12, 
-                                                 uiOutput("beta_display_results_cross"))))),
-                          tabPanel(
-                            title ="Longitudinal",
-                            sidebarLayout(
-                              position = "left",
-                              sidebarPanel(width = 3,
-                                           uiOutput("beta_primvars_long"),
-                                           uiOutput("beta_prim_vars_types_long"),
-                                           uiOutput("beta_covariates_long"), br(), 
-                                           uiOutput("beta_downloadTablelong"),
-                                           uiOutput("beta_references_long")),
-                              mainPanel(width = 9,
-                                        fluidRow(width = 12, 
-                                                 uiOutput("beta_display_resultslong")))))))),
-         
-         ##### Data Transformation ####
-         tabItem(tabName = "dataTransform", br(),
-                 column(width = 6, style='padding-left:0px',
-                        box(title = strong("Data Transformation", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
-                            DATA_TRANSFORM_COMMENT,
-                            actionButton("datTransRun", (strong("Run!")), class = "btn-info") ),
-                        uiOutput("datTransDownload")),
-                 column(width = 6, style='padding-left:0px', 
-                        box(title = strong("References", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
-                            DATA_TRANSFORM_REFERENCE))),
-         
-         ##### Taxa Analysis ####
-         tabItem(tabName = "taxaAnalysis", br(),
-                 fluidRow(
-                   tabBox(width = 12,
-                          tabPanel(
-                            title = "Cross-Sectional",
-                            sidebarLayout( 
-                              position = "left",
-                              sidebarPanel(width = 3,
-                                           uiOutput("primvars_taxa"),
-                                           uiOutput("morePrimvar_opt_taxa"),
-                                           uiOutput("covariates_taxa"), br(),
-                                           uiOutput("downloadTable_taxa"),
-                                           uiOutput("taxa_references")),
-                              mainPanel(width = 9,
-                                        fluidRow(width = 12, 
-                                                 div(style='height:800px;overflow-y: scroll;', uiOutput("taxa_display")), br(),br(),
-                                                 uiOutput("taxa_display_dend"))))),
-                          tabPanel(
-                            title = "Longitudinal",
-                            sidebarLayout( 
-                              position = "left",
-                              sidebarPanel(width = 3,
-                                           uiOutput("primvars_taxa.long"),
-                                           uiOutput("morePrimvar_opt_taxa.long"),
-                                           uiOutput("covariates_taxa.long"), br(),
-                                           uiOutput("downloadTable_taxalong"),
-                                           uiOutput("taxa_references_long")),
-                              mainPanel(width = 9,
-                                        fluidRow(width = 12,
-                                                 div(style='height:800px;overflow-y: scroll;', uiOutput("taxa_displaylong")), br(),br(),
-                                                 uiOutput("taxa_displaylongd"))))))))
-        )
+                column(width = 6, style='padding-left:0px', uiOutput("addDownloadinfo"))),
+        
+        ##### QC ####
+        tabItem(tabName = "step2", br(), 
+                sidebarLayout(
+                  position = "left",
+                  sidebarPanel(width = 3,
+                               textInput("kingdom", h4(strong("Bacteria?")), value = "Bacteria"),
+                               QC_KINGDOM_COMMENT,
+                               tags$style(type = 'text/css', '#slider1 .irs-grid-text {font-size: 1px}'),
+                               tags$style(type = 'text/css', '#slider2 .irs-grid-text {font-size: 1px}'), 
+                               
+                               sliderInput("slider1", h4(strong("Library Size?")), min=0, max=10000, value = 3000, step = 1000),
+                               QC_LIBRARY_SIZE_COMMENT1,
+                               QC_LIBRARY_SIZE_COMMENT2,
+                               
+                               sliderInput("slider2", h4(strong("Mean Proportion?")), min = 0, max = 0.1, value = 0.002, step = 0.001,  post  = " %"),
+                               QC_MEAN_PROP_COMMENT1,
+                               QC_MEAN_PROP_COMMENT2,
+                               
+                               br(),
+                               p(" ", style = "margin-bottom: -20px;"),
+                               
+                               h4(strong("Erroneous Taxonomic Names?")),
+                               textInput("rem.str", label = "Complete Match", value = ""),
+                               QC_TAXA_NAME_COMMENT1,
+                               
+                               textInput("part.rem.str", label = "Partial Match", value = ""),
+                               QC_TAXA_NAME_COMMENT2,
+                               
+                               actionButton("run", (strong("Run!")), class = "btn-info"), br(), br(),
+                               uiOutput("moreControls")),
+                  mainPanel(width = 9,
+                            fluidRow(width = 12,
+                                     status = "primary", solidHeader = TRUE, 
+                                     valueBoxOutput("sample_Size", width = 3),
+                                     valueBoxOutput("OTUs_Size", width = 3),
+                                     valueBoxOutput("phyla", width = 3),
+                                     valueBoxOutput("classes", width = 3)),
+                            fluidRow(width = 12, 
+                                     status = "primary", solidHeader = TRUE,
+                                     valueBoxOutput("orders", width = 3),
+                                     valueBoxOutput("families", width = 3),
+                                     valueBoxOutput("genera", width = 3),
+                                     valueBoxOutput("species", width = 3)),
+                            fluidRow(style = "position:relative",
+                                     tabBox(width = 6, title = strong("Library Size", style = "color:black"), 
+                                            tabPanel("Histogram",
+                                                     plotlyOutput("hist"),
+                                                     sliderInput("binwidth", "# of Bins:",min = 0, max = 100, value = 50, width = "100%"),
+                                                     chooseSliderSkin("Round", color = "#112446")),
+                                            tabPanel("Box Plot", 
+                                                     plotlyOutput("boxplot"))),
+                                     tabBox(width = 6, title = strong("Mean Proportion", style = "color:black"), 
+                                            tabPanel("Histogram",
+                                                     plotlyOutput("hist2"),
+                                                     sliderInput("binwidth2", "# of Bins:",min = 0, max = 100, value = 50, width = "100%"),
+                                                     chooseSliderSkin("Round", color = "#112446")),
+                                            tabPanel("Box Plot",
+                                                     plotlyOutput("boxplot2"))))))),
+        
+        ##### DIVERSITY Calculation ####
+        tabItem(tabName = "divCalculation", br(),
+                column(width = 6, style = 'padding-left:0px',
+                       box(title = strong("Diversity Calculation", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
+                           ALPHA_COMMENT, 
+                           BETA_COMMENT, 
+                           actionButton("divCalcRun", (strong("Run!")), class = "btn-info")),
+                       uiOutput("divCalcDownload")),
+                column(width = 6, style='padding-left:0px',
+                       box(title = strong("References", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
+                           p("Alpha Diversity", style = "font-size:12pt"),
+                           ALPHA_REFERENCES,
+                           p("Beta Diversity", style = "font-size:12pt"),
+                           BETA_REFERENCES))),
+        
+        ##### ALPHA DIVERSITY ####
+        tabItem(tabName = "alphaDivanalysis", br(),
+                fluidRow(
+                  tabBox(width = 12,
+                         tabPanel(
+                           title ="Cross-Sectional",
+                           sidebarLayout(
+                             position = "left",
+                             sidebarPanel(width = 3,
+                                          uiOutput("primvars"),
+                                          uiOutput("prim_vars_types"),
+                                          uiOutput("covariates"), br(), 
+                                          uiOutput("alpha_downloadTable"),
+                                          uiOutput("alpha_references")),
+                             mainPanel(width = 9,
+                                       fluidRow(width = 12, 
+                                                uiOutput("alpha_display_results"))))),
+                         tabPanel(
+                           title ="Longitudinal", 
+                           sidebarLayout(
+                             position = "left",
+                             sidebarPanel(width = 3, 
+                                          uiOutput("primvars_long"),
+                                          uiOutput("prim_vars_types_long"),
+                                          uiOutput("covariates_long"), br(), 
+                                          uiOutput("alpha_downloadTablelong"),
+                                          uiOutput("alpha_references_long")),
+                             mainPanel(width = 9,
+                                       fluidRow(width = 12, 
+                                                uiOutput("alpha_display_resultslong")))))))),
+        
+        ##### BETA DIVERSITY ####
+        tabItem(tabName = "betaDivanalysis", br(),
+                fluidRow(
+                  tabBox(width = 12,
+                         tabPanel(
+                           title ="Cross-Sectional",
+                           sidebarLayout(
+                             position = "left",
+                             sidebarPanel(width = 3,
+                                          uiOutput("beta_primvar_cross"),
+                                          uiOutput("beta_prim_vars_types_cross"),
+                                          uiOutput("beta_covariates_cross"), br(), 
+                                          uiOutput("beta_downloadTable"),
+                                          uiOutput("beta_references")),
+                             mainPanel(width = 9,
+                                       fluidRow(width = 12, 
+                                                uiOutput("beta_display_results_cross"))))),
+                         tabPanel(
+                           title ="Longitudinal",
+                           sidebarLayout(
+                             position = "left",
+                             sidebarPanel(width = 3,
+                                          uiOutput("beta_primvars_long"),
+                                          uiOutput("beta_prim_vars_types_long"),
+                                          uiOutput("beta_covariates_long"), br(), 
+                                          uiOutput("beta_downloadTablelong"),
+                                          uiOutput("beta_references_long")),
+                             mainPanel(width = 9,
+                                       fluidRow(width = 12, 
+                                                uiOutput("beta_display_resultslong")))))))),
+        
+        ##### Data Transformation ####
+        tabItem(tabName = "dataTransform", br(),
+                column(width = 6, style='padding-left:0px',
+                       box(title = strong("Data Transformation", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
+                           DATA_TRANSFORM_COMMENT,
+                           actionButton("datTransRun", (strong("Run!")), class = "btn-info") ),
+                       uiOutput("datTransDownload")),
+                column(width = 6, style='padding-left:0px', 
+                       box(title = strong("References", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
+                           DATA_TRANSFORM_REFERENCE))),
+        
+        ##### Taxa Analysis ####
+        tabItem(tabName = "taxaAnalysis", br(),
+                fluidRow(
+                  tabBox(width = 12,
+                         tabPanel(
+                           title = "Cross-Sectional",
+                           sidebarLayout( 
+                             position = "left",
+                             sidebarPanel(width = 3,
+                                          uiOutput("primvars_taxa"),
+                                          uiOutput("morePrimvar_opt_taxa"),
+                                          uiOutput("covariates_taxa"), br(),
+                                          uiOutput("downloadTable_taxa"),
+                                          uiOutput("taxa_references")),
+                             mainPanel(width = 9,
+                                       fluidRow(width = 12, 
+                                                div(style='height:800px;overflow-y: scroll;', uiOutput("taxa_display")), br(),br(),
+                                                uiOutput("Ctaxa_display_dend"))))),
+                         tabPanel(
+                           title = "Longitudinal",
+                           sidebarLayout( 
+                             position = "left",
+                             sidebarPanel(width = 3,
+                                          uiOutput("primvars_taxa.long"),
+                                          uiOutput("morePrimvar_opt_taxa.long"),
+                                          uiOutput("covariates_taxa.long"), br(),
+                                          uiOutput("downloadTable_taxalong"),
+                                          uiOutput("taxa_references_long")),
+                             mainPanel(width = 9,
+                                       fluidRow(width = 12,
+                                                div(style='height:800px;overflow-y: scroll;', uiOutput("taxa_displaylong")), br(),br(),
+                                                uiOutput("Ltaxa_display_dend"))))))))
       )
+    )
   )
 }
 
@@ -468,10 +468,10 @@ server = function(input, output, session) {
     })
   
   ## variable define ####
-  infile = reactiveValues(biom = NULL, qc_biom = NULL, rare_biom = NULL)
+  infile = reactiveValues(biom = NULL, qc_biom = NULL, rare_biom = NULL, qc_biomNA = NULL, rare_biomNA = NULL)
   ds.Ks <- reactiveValues(res = NULL)
-  chooseData = reactiveValues(sam.dat = NULL, mon.sin.rev.bin.con = NULL, prim_vars = NULL, alpha.div = NULL,
-                              alpha.div.rare = NULL, alpha.div.qc = NULL, taxa.out = NULL, tax.tab = NULL)
+  chooseData = reactiveValues(sam.dat = NULL, mon.sin.rev.bin.con = NULL, prim_vars = NULL, alpha.div = NULL, NAadded = NULL,
+                              alpha.div.rare = NULL, alpha.div.qc = NULL, taxa.out = NULL, tax.tab = NULL, taxa.outNA = NULL, tax.tabNA = NULL)
   is.results = reactiveValues(result = NULL)
   is.results.long = reactiveValues(result = NULL)
   multi.test = reactiveValues(boolval = FALSE)
@@ -1792,11 +1792,20 @@ server = function(input, output, session) {
                                     mean.prop.cut.off = input$slider2/100,
                                     rem.tax = rem.tax.complete, rem.tax.str = rem.tax.partial)
         
+        infile$qc_biomNA = biom.cleanNA(infile$biom, 
+                                    input$kingdom, 
+                                    lib.size.cut.off = input$slider1, 
+                                    mean.prop.cut.off = input$slider2/100,
+                                    rem.tax = rem.tax.complete, rem.tax.str = rem.tax.partial)
+        
         incProgress(3/10, message = "Rarefying in progress")
         lib_size.sum = lib.size.func(infile$qc_biom)$lib.size.sum
         infile$rare_biom = rarefy.func(infile$qc_biom, 
                                        cut.off = lib_size.sum["Minimum"],
                                        multi.rarefy = 1)
+        infile$rare_biomNA = rarefy.func(infile$qc_biomNA, 
+                                         cut.off = lib_size.sum["Minimum"],
+                                         multi.rarefy = 1)
         
         incProgress(2/10, message = "Saving File in progress")
         
@@ -1804,6 +1813,7 @@ server = function(input, output, session) {
         chooseData$mon.sin.rev.bin.con = is.mon.sin.rev.bin.con(chooseData$sam.dat)
         chooseData$prim_vars = pri.func(chooseData$sam.dat, chooseData$mon.sin.rev.bin.con)
         chooseData$tax.tab = tax_table(infile$rare_biom)
+        chooseData$tax.tabNA = tax_table(infile$rare_biomNA)
         
         #library.size <- library.size[names(library.size) %in% rownames(rare.sam.dat)]
         
@@ -1932,9 +1942,19 @@ server = function(input, output, session) {
         rare.tax.tab <- tax_table(infile$rare_biom)
         no.rare.otu.tab <- otu_table(infile$qc_biom)
         no.rare.tax.tab <- tax_table(infile$qc_biom)
+        
+        rare.otu.tabNA <- otu_table(infile$rare_biomNA)
+        rare.tax.tabNA <- tax_table(infile$rare_biomNA)
+        no.rare.otu.tabNA <- otu_table(infile$qc_biomNA)
+        no.rare.tax.tabNA <- tax_table(infile$qc_biomNA)
+        
         chooseData$taxa.out = tax.trans(no.rare.otu.tab, no.rare.tax.tab, rare.otu.tab, rare.tax.tab)
+        chooseData$taxa.outNA = tax.trans.na(no.rare.otu.tabNA, no.rare.tax.tabNA, rare.otu.tabNA, rare.tax.tabNA)
         chooseData$taxa.names.out = taxa.names.rank(chooseData$taxa.out[[1]])
         chooseData$tax.tab = rare.tax.tab
+        chooseData$tax.tabNA = rare.tax.tabNA
+        
+        chooseData$NAadded <- add_NA(chooseData$taxa.outNA, chooseData$tax.tabNA)
         
         incProgress(3/10, message = "Transformation in progress")
         
@@ -3490,10 +3510,127 @@ server = function(input, output, session) {
             taxa.bin.boxplot(taxa_dataBinvar, taxa_dataTaxa, taxa.outputs$DAoutput, chooseData$taxa.names.out, 6, TRUE)  ####all.t.test.united should be used
           })
           
-          output$dendrogram = renderGrViz({
-            taxa.sig.dend(taxa.outputs$DAoutput, chooseData$tax.tab, "twopi", include)
+          
+          taxa.sig <- taxa.sig.dend(taxa.outputs$DAoutput, chooseData$NAadded$tax.tab, "twopi", include)
+          
+          flow.text <- taxa.sig$flow.text
+          taxon.tab <- taxa.sig$taxon.tab
+          ci.tab.all <- taxa.sig$ci.tab.all
+          
+          if ( include == FALSE){
+            taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
+          }
+          
+          if ( length(ci.tab.all) > 1 ){
             
+            for( i in 1:nrow(taxon.tab)){
+              if ( ci.tab.all[-1][i] < 0){
+                taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "blue")
+                taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+              }
+              else{
+                taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "red")
+                taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+              }
+              
+            }
+          }
+          
+          N <- dim(taxon.tab)[1]
+          itr <- ceiling(N/5)
+          tab.one   <- data.frame( matrix(ncol=2,nrow=0) )
+          tab.two   <- data.frame( matrix(ncol=2,nrow=0) )
+          tab.three <- data.frame( matrix(ncol=2,nrow=0) )
+          tab.four  <- data.frame( matrix(ncol=2,nrow=0) )
+          tab.five  <- data.frame( matrix(ncol=2,nrow=0) )
+          
+          colnames(tab.one) <- c("ID", "Taxon")
+          colnames(tab.two) <- c("ID", "Taxon")
+          colnames(tab.three) <- c("ID", "Taxon")
+          colnames(tab.four) <- c("ID", "Taxon")
+          colnames(tab.five) <- c("ID", "Taxon")
+          
+          if ( dim(taxon.tab)[1] > 0 ) {
+            
+            i = 1
+            j = 1
+            N.rmd <- N %% 5
+            N.fix <- N + 5 - N.rmd
+            while ( i <= itr) {
+              tab.one  [i,] <- taxon.tab[j,]
+              tab.two  [i,] <- taxon.tab[j+1,]
+              tab.three[i,] <- taxon.tab[j+2,]
+              tab.four [i,] <- taxon.tab[j+3,]
+              tab.five [i,] <- taxon.tab[j+4,]
+              i <- i + 1  
+              j <- j + 5
+            }
+            row.names(tab.one) <- NULL
+            row.names(tab.two) <- NULL
+            row.names(tab.three) <- NULL
+            row.names(tab.four) <- NULL
+            row.names(tab.five) <- NULL
+            
+            tab.one <- na.omit(tab.one)
+            tab.two <- na.omit(tab.two)
+            tab.three <- na.omit(tab.three)
+            tab.four <- na.omit(tab.four)
+            tab.five <- na.omit(tab.five)
+          }
+          
+          output$Ctaxa_display_dend = renderUI({
+            
+            box(title = strong("Dendrogram"), width = 12, status = "primary", solidHeader = TRUE,
+                
+                fluidRow(width = 12, align = "center",
+                         div(style = "display: inline-block:vertical-align:top;", grVizOutput("dendrogram", height = 1000, width = 1000)) ),
+                br(),
+                fluidRow(width = 12, align = "center",
+                         tagList(
+                           div(style="display: inline-block;vertical-align:top;", htmlOutput("bin1_taxonlist") ),
+                           div(style="display: inline-block;vertical-align:top;", htmlOutput("bin2_taxonlist") ),
+                           div(style="display: inline-block;vertical-align:top;", htmlOutput("bin3_taxonlist") ),
+                           div(style="display: inline-block;vertical-align:top;", htmlOutput("bin4_taxonlist") ),
+                           div(style="display: inline-block;vertical-align:top;", htmlOutput("bin5_taxonlist") )
+                         )
+                )
+            )
           })
+          
+          output$dendrogram = renderGrViz({
+            flow.text
+          })
+          output$bin1_taxonlist <- renderText({
+            sig.tab1 <- kable(tab.one, 'html', booktabs =TRUE, escape = FALSE) %>%
+              kable_styling(latex_options = c('hold_position'))
+            sig.tab1
+          })
+          output$bin2_taxonlist <- renderText({
+            
+            sig.tab2 <- kable(tab.two, 'html', booktabs =TRUE, escape = FALSE) %>%
+              kable_styling(latex_options = c('hold_position'))
+            sig.tab2
+          })
+          output$bin3_taxonlist <- renderText({
+            
+            sig.tab3 <- kable(tab.three, 'html', booktabs =TRUE, escape = FALSE) %>%
+              kable_styling(latex_options = c('hold_position'))
+            sig.tab3
+          })
+          output$bin4_taxonlist <- renderText({
+            
+            sig.tab4 <- kable(tab.four, 'html', booktabs =TRUE, escape = FALSE) %>%
+              kable_styling(latex_options = c('hold_position'))
+            sig.tab4
+          })
+          output$bin5_taxonlistt <- renderText({
+            
+            sig.tab5 <- kable(tab.five, 'html', booktabs =TRUE, escape = FALSE) %>%
+              kable_styling(latex_options = c('hold_position'))
+            sig.tab5
+          })
+          
+          
         } else if (input$chooseMethod_taxa == "Linear regression" | input$chooseMethod_taxa == "Logistic regression" | input$chooseMethod_taxa == "Negative binomial regression" | input$chooseMethod_taxa == "Beta regression") {
           if (input$covariates_taxa == "None") {
             if (input$chooseMethod_taxa =="Linear regression") {
@@ -3668,13 +3805,129 @@ server = function(input, output, session) {
               duplicate.list(duplicate.taxa, taxon.inplot, chooseData$taxa.names.out$duplicates)
             })
             
-            output$taxa_display_dend = renderUI({
-              box(title = strong("Dendrogram", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
-                  grVizOutput("dendrogram", height = 1000))
+            taxa.sig <- taxa.sig.dend(taxa.outputs$DAoutput, chooseData$NAadded$tax.tab, "twopi", include)
+            
+            flow.text <- taxa.sig$flow.text
+            taxon.tab <- taxa.sig$taxon.tab
+            ci.tab.all <- taxa.sig$ci.tab.all
+            
+            
+            if ( include == FALSE){
+              taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
+            }
+            
+            if ( length(ci.tab.all) > 1 ){
+              
+              for( i in 1:nrow(taxon.tab)){
+                if ( ci.tab.all[-1][i] < 0){
+                  taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "blue")
+                  taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+                }
+                else{
+                  taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "red")
+                  taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+                }
+                
+              }
+            }
+            
+            
+            N <- dim(taxon.tab)[1]
+            itr <- ceiling(N/5)
+            tab.one   <- data.frame( matrix(ncol=2,nrow=0) )
+            tab.two   <- data.frame( matrix(ncol=2,nrow=0) )
+            tab.three <- data.frame( matrix(ncol=2,nrow=0) )
+            tab.four  <- data.frame( matrix(ncol=2,nrow=0) )
+            tab.five  <- data.frame( matrix(ncol=2,nrow=0) )
+            
+            colnames(tab.one) <- c("ID", "Taxon")
+            colnames(tab.two) <- c("ID", "Taxon")
+            colnames(tab.three) <- c("ID", "Taxon")
+            colnames(tab.four) <- c("ID", "Taxon")
+            colnames(tab.five) <- c("ID", "Taxon")
+            
+            if ( dim(taxon.tab)[1] > 0 ) {
+              
+              i = 1
+              j = 1
+              N.rmd <- N %% 5
+              N.fix <- N + 5 - N.rmd
+              while ( i <= itr) {
+                tab.one  [i,] <- taxon.tab[j,]
+                tab.two  [i,] <- taxon.tab[j+1,]
+                tab.three[i,] <- taxon.tab[j+2,]
+                tab.four [i,] <- taxon.tab[j+3,]
+                tab.five [i,] <- taxon.tab[j+4,]
+                i <- i + 1  
+                j <- j + 5
+              }
+              row.names(tab.one) <- NULL
+              row.names(tab.two) <- NULL
+              row.names(tab.three) <- NULL
+              row.names(tab.four) <- NULL
+              row.names(tab.five) <- NULL
+              
+              tab.one <- na.omit(tab.one)
+              tab.two <- na.omit(tab.two)
+              tab.three <- na.omit(tab.three)
+              tab.four <- na.omit(tab.four)
+              tab.five <- na.omit(tab.five)
+            }
+            
+            output$Ctaxa_display_dend = renderUI({
+              
+              box(title = strong("Dendrogram"), width = 12, status = "primary", solidHeader = TRUE,
+                  
+                  fluidRow(width = 12, align = "center",
+                           div(style = "display: inline-block:vertical-align:top;", grVizOutput("dendrogram", height = 1000, width = 1000)) ),
+                  br(),
+                  fluidRow(width = 12, align = "center",
+                           tagList(
+                             div(style="display: inline-block;vertical-align:top;", htmlOutput("bin1_taxonlist") ),
+                             div(style="display: inline-block;vertical-align:top;", htmlOutput("bin2_taxonlist") ),
+                             div(style="display: inline-block;vertical-align:top;", htmlOutput("bin3_taxonlist") ),
+                             div(style="display: inline-block;vertical-align:top;", htmlOutput("bin4_taxonlist") ),
+                             div(style="display: inline-block;vertical-align:top;", htmlOutput("bin5_taxonlist") )
+                           )
+                  )
+              )
             })
             
             output$dendrogram = renderGrViz({
-              taxa.sig.dend(taxa.outputs$DAoutput, chooseData$tax.tab, "twopi", include)
+              flow.text
+            })
+            output$bin1_taxonlist <- renderText({
+              sig.tab1 <- kable(tab.one, 'html', booktabs =TRUE, escape = FALSE) %>%
+                kable_styling(latex_options = c('hold_position'))
+              sig.tab1
+            })
+            output$bin2_taxonlist <- renderText({
+              
+              sig.tab2 <- kable(tab.two, 'html', booktabs =TRUE, escape = FALSE) %>%
+                kable_styling(latex_options = c('hold_position'))
+              sig.tab2
+            })
+            output$bin3_taxonlist <- renderText({
+              
+              sig.tab3 <- kable(tab.three, 'html', booktabs =TRUE, escape = FALSE) %>%
+                kable_styling(latex_options = c('hold_position'))
+              sig.tab3
+            })
+            output$bin4_taxonlist <- renderText({
+              
+              sig.tab4 <- kable(tab.four, 'html', booktabs =TRUE, escape = FALSE) %>%
+                kable_styling(latex_options = c('hold_position'))
+              sig.tab4
+            })
+            output$bin5_taxonlistt <- renderText({
+              
+              sig.tab5 <- kable(tab.five, 'html', booktabs =TRUE, escape = FALSE) %>%
+                kable_styling(latex_options = c('hold_position'))
+              sig.tab5
+            })
+            
+            output$duplicates = renderPlot({
+              duplicate.list(duplicate.taxa, taxon.inplot, chooseData$taxa.names.out$duplicates)
             })
             
           } else {
@@ -3712,13 +3965,129 @@ server = function(input, output, session) {
               })
             })
             
-            output$taxa_display_dend = renderUI({
-              box(title = strong("Dendrogram", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
-                  grVizOutput("dendrogram", height = 1000))
+            output$duplicates = renderPlot({
+              duplicate.list(duplicate.taxa, taxon.inplot, chooseData$taxa.names.out$duplicates)
+            })
+            
+            taxa.sig <- taxa.sig.dend(taxa.outputs$DAoutput, chooseData$NAadded$tax.tab, "twopi", include)
+            
+            flow.text <- taxa.sig$flow.text
+            taxon.tab <- taxa.sig$taxon.tab
+            ci.tab.all <- taxa.sig$ci.tab.all
+            
+            
+            if ( include == FALSE){
+              taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
+            }
+            
+            if ( length(ci.tab.all) > 1 ){
+              
+              for( i in 1:nrow(taxon.tab)){
+                if ( ci.tab.all[-1][i] < 0){
+                  taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "blue")
+                  taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+                }
+                else{
+                  taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "red")
+                  taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+                }
+                
+              }
+            }
+            
+            
+            N <- dim(taxon.tab)[1]
+            itr <- ceiling(N/5)
+            tab.one   <- data.frame( matrix(ncol=2,nrow=0) )
+            tab.two   <- data.frame( matrix(ncol=2,nrow=0) )
+            tab.three <- data.frame( matrix(ncol=2,nrow=0) )
+            tab.four  <- data.frame( matrix(ncol=2,nrow=0) )
+            tab.five  <- data.frame( matrix(ncol=2,nrow=0) )
+            
+            colnames(tab.one) <- c("ID", "Taxon")
+            colnames(tab.two) <- c("ID", "Taxon")
+            colnames(tab.three) <- c("ID", "Taxon")
+            colnames(tab.four) <- c("ID", "Taxon")
+            colnames(tab.five) <- c("ID", "Taxon")
+            
+            if ( dim(taxon.tab)[1] > 0 ) {
+              
+              i = 1
+              j = 1
+              N.rmd <- N %% 5
+              N.fix <- N + 5 - N.rmd
+              while ( i <= itr) {
+                tab.one  [i,] <- taxon.tab[j,]
+                tab.two  [i,] <- taxon.tab[j+1,]
+                tab.three[i,] <- taxon.tab[j+2,]
+                tab.four [i,] <- taxon.tab[j+3,]
+                tab.five [i,] <- taxon.tab[j+4,]
+                i <- i + 1  
+                j <- j + 5
+              }
+              row.names(tab.one) <- NULL
+              row.names(tab.two) <- NULL
+              row.names(tab.three) <- NULL
+              row.names(tab.four) <- NULL
+              row.names(tab.five) <- NULL
+              
+              tab.one <- na.omit(tab.one)
+              tab.two <- na.omit(tab.two)
+              tab.three <- na.omit(tab.three)
+              tab.four <- na.omit(tab.four)
+              tab.five <- na.omit(tab.five)
+            }
+            
+            output$Ctaxa_display_dend = renderUI({
+              
+              box(title = strong("Dendrogram"), width = 12, status = "primary", solidHeader = TRUE,
+                  
+                  fluidRow(width = 12, align = "center",
+                           div(style = "display: inline-block:vertical-align:top;", grVizOutput("dendrogram", height = 1000, width = 1000)) ),
+                  br(),
+                  fluidRow(width = 12, align = "center",
+                           tagList(
+                             div(style="display: inline-block;vertical-align:top;", htmlOutput("bin1_taxonlist") ),
+                             div(style="display: inline-block;vertical-align:top;", htmlOutput("bin2_taxonlist") ),
+                             div(style="display: inline-block;vertical-align:top;", htmlOutput("bin3_taxonlist") ),
+                             div(style="display: inline-block;vertical-align:top;", htmlOutput("bin4_taxonlist") ),
+                             div(style="display: inline-block;vertical-align:top;", htmlOutput("bin5_taxonlist") )
+                           )
+                  )
+              )
             })
             
             output$dendrogram = renderGrViz({
-              taxa.sig.dend(taxa.outputs$DAoutput, chooseData$tax.tab, "twopi", include)
+              flow.text
+            })
+            output$bin1_taxonlist <- renderText({
+              sig.tab1 <- kable(tab.one, 'html', booktabs =TRUE, escape = FALSE) %>%
+                kable_styling(latex_options = c('hold_position'))
+              sig.tab1
+            })
+            output$bin2_taxonlist <- renderText({
+              
+              sig.tab2 <- kable(tab.two, 'html', booktabs =TRUE, escape = FALSE) %>%
+                kable_styling(latex_options = c('hold_position'))
+              sig.tab2
+            })
+            output$bin3_taxonlist <- renderText({
+              
+              sig.tab3 <- kable(tab.three, 'html', booktabs =TRUE, escape = FALSE) %>%
+                kable_styling(latex_options = c('hold_position'))
+              sig.tab3
+            })
+            output$bin4_taxonlist <- renderText({
+              
+              sig.tab4 <- kable(tab.four, 'html', booktabs =TRUE, escape = FALSE) %>%
+                kable_styling(latex_options = c('hold_position'))
+              sig.tab4
+            })
+            output$bin5_taxonlistt <- renderText({
+              
+              sig.tab5 <- kable(tab.five, 'html', booktabs =TRUE, escape = FALSE) %>%
+                kable_styling(latex_options = c('hold_position'))
+              sig.tab5
             })
             
             output$duplicates = renderPlot({
@@ -3760,15 +4129,6 @@ server = function(input, output, session) {
             zip(zipfile=sum.file, files=dataFiles)
           }
         )
-        # output$tdownloadTabl1 <- downloadHandler(
-        #   filename = function() {
-        #     paste("Taxa.Sum.Table", ".csv", sep="")
-        #   },
-        #   content = function(file) {
-        #     write.list(taxa.results$taxa.bin.sum.out, file, row.names = TRUE)
-        #     
-        #   }
-        # )
         
         output$tdownloadTabl2 <- downloadHandler(
           filename = function() {
@@ -3787,15 +4147,6 @@ server = function(input, output, session) {
             zip(zipfile=DA.file, files=dataFiles)
           }
         )
-        
-        # output$tdownloadTabl2 <- downloadHandler(
-        #   filename = function() {
-        #     paste("Taxa.Analysis.Output", ".csv", sep="")
-        #   },
-        #   content = function(file) {
-        #     write.list(taxa.outputs$DAoutput, file, row.names = TRUE)
-        #   }
-        # )
         
         output$gdownload <- downloadHandler(
           filename = function() {
@@ -3832,6 +4183,7 @@ server = function(input, output, session) {
         
       })
   }, ignoreNULL = TRUE, ignoreInit = TRUE)
+  
   observeEvent(input$runbtn_cont_taxa,{
     validate(
       if (input$covariates_taxa == "Covariate(s)" & is.null(input$covariatesOptions_taxa)) {
@@ -3982,14 +4334,123 @@ server = function(input, output, session) {
           })
         })
         
-        output$taxa_display_dend = renderUI({
-          box(title = strong("Dendrogram", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
-              grVizOutput("dendrogram", height = 1000))
+        taxa.sig <- taxa.sig.dend(taxa.outputs$DAoutput, chooseData$NAadded$tax.tab, "twopi", include)
+        
+        flow.text <- taxa.sig$flow.text
+        taxon.tab <- taxa.sig$taxon.tab
+        ci.tab.all <- taxa.sig$ci.tab.all
+        
+        if ( include == FALSE){
+          taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
+        }
+        
+        if ( length(ci.tab.all) > 1 ){
+          
+          for( i in 1:nrow(taxon.tab)){
+            if ( ci.tab.all[-1][i] < 0){
+              taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "blue")
+              taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+            }
+            else{
+              taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "red")
+              taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+            }
+            
+          }
+        }
+        
+        N <- dim(taxon.tab)[1]
+        itr <- ceiling(N/5)
+        tab.one   <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.two   <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.three <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.four  <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.five  <- data.frame( matrix(ncol=2,nrow=0) )
+        
+        colnames(tab.one) <- c("ID", "Taxon")
+        colnames(tab.two) <- c("ID", "Taxon")
+        colnames(tab.three) <- c("ID", "Taxon")
+        colnames(tab.four) <- c("ID", "Taxon")
+        colnames(tab.five) <- c("ID", "Taxon")
+        
+        if ( dim(taxon.tab)[1] > 0 ) {
+          
+          i = 1
+          j = 1
+          N.rmd <- N %% 5
+          N.fix <- N + 5 - N.rmd
+          while ( i <= itr) {
+            tab.one  [i,] <- taxon.tab[j,]
+            tab.two  [i,] <- taxon.tab[j+1,]
+            tab.three[i,] <- taxon.tab[j+2,]
+            tab.four [i,] <- taxon.tab[j+3,]
+            tab.five [i,] <- taxon.tab[j+4,]
+            i <- i + 1  
+            j <- j + 5
+          }
+          row.names(tab.one) <- NULL
+          row.names(tab.two) <- NULL
+          row.names(tab.three) <- NULL
+          row.names(tab.four) <- NULL
+          row.names(tab.five) <- NULL
+          
+          tab.one <- na.omit(tab.one)
+          tab.two <- na.omit(tab.two)
+          tab.three <- na.omit(tab.three)
+          tab.four <- na.omit(tab.four)
+          tab.five <- na.omit(tab.five)
+        }
+        
+        output$Ctaxa_display_dend = renderUI({
+          
+          box(title = strong("Dendrogram"), width = 12, status = "primary", solidHeader = TRUE,
+              
+              fluidRow(width = 12, align = "center",
+                       div(style = "display: inline-block:vertical-align:top;", grVizOutput("dendrogram", height = 1000, width = 1000)) ),
+              br(),
+              fluidRow(width = 12, align = "center",
+                       tagList(
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("con1_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("con2_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("con3_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("con4_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("con5_taxonlist") )
+                       )
+              )
+          )
         })
         
         output$dendrogram = renderGrViz({
-          taxa.sig.dend(taxa.outputs$DAoutput, chooseData$tax.tab, "twopi", include)
+          flow.text
+        })
+        output$con1_taxonlist <- renderText({
+          sig.tab1 <- kable(tab.one, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab1
+        })
+        output$con2_taxonlist <- renderText({
           
+          sig.tab2 <- kable(tab.two, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab2
+        })
+        output$con3_taxonlist <- renderText({
+          
+          sig.tab3 <- kable(tab.three, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab3
+        })
+        output$con4_taxonlist <- renderText({
+          
+          sig.tab4 <- kable(tab.four, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab4
+        })
+        output$con5_taxonlistt <- renderText({
+          
+          sig.tab5 <- kable(tab.five, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab5
         })
         
         incProgress(1/10, message = "Displaying Results in progress")
@@ -4045,24 +4506,6 @@ server = function(input, output, session) {
             zip(zipfile=DA.file, files=dataFiles)
           }
         )
-        
-        # output$tdownloadTabl1 <- downloadHandler(
-        #   filename = function() {
-        #     paste("Taxa.Sum.Table", ".csv", sep="")
-        #   },
-        #   content = function(file) {
-        #     write.list(taxa.results$taxa.con.sum.out, file, row.names = TRUE)
-        #   }
-        # )
-        # 
-        # output$tdownloadTabl2 <- downloadHandler(
-        #   filename = function() {
-        #     paste("Taxa.Analysis.Output", ".csv", sep="")
-        #   },
-        #   content = function(file) {
-        #     write.list(taxa.outputs$DAoutput, file, row.names = TRUE)
-        #   }
-        # )
         
         output$gdownload <- downloadHandler(
           filename = function() {
@@ -4153,8 +4596,6 @@ server = function(input, output, session) {
         if (input$covariates_taxa.long == "None") {
           taxa.bin.id.out <- taxa.bin.id.cat.ref.united.func(input$primvar_taxa.long, input$clustervar_taxa, rename.cats_ref,
                                                              rename.cats_com, sam_dat, taxa = chooseData$taxa.out[[taxa.types$dataType]])
-          
-          
           taxa.results$bin.var <- taxa.bin.id.out$bin.var
           taxa.results$id.var <- taxa.bin.id.out$id.var
           taxa.results$taxa <- taxa.bin.id.out$taxa
@@ -4291,15 +4732,124 @@ server = function(input, output, session) {
           })
         })
         
-        output$taxa_displaylongd = renderUI({
-          box(title = strong("Dendrogram", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
-              grVizOutput("dendrogramlong", height = 1000))
+        taxa.sig <- taxa.sig.dend(taxa.outputs$DAoutputlong, chooseData$NAadded$tax.tab, "twopi", include)
+        
+        flow.text <- taxa.sig$flow.text
+        taxon.tab <- taxa.sig$taxon.tab
+        ci.tab.all <- taxa.sig$ci.tab.all
+        
+        if ( include == FALSE){
+          taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
+        }
+        
+        if ( length(ci.tab.all) > 1 ){
+          
+          for( i in 1:nrow(taxon.tab)){
+            if ( ci.tab.all[-1][i] < 0){
+              taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "blue")
+              taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+            }
+            else{
+              taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "red")
+              taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+            }
+            
+          }
+        }
+        
+        N <- dim(taxon.tab)[1]
+        itr <- ceiling(N/5)
+        tab.one   <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.two   <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.three <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.four  <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.five  <- data.frame( matrix(ncol=2,nrow=0) )
+        
+        colnames(tab.one) <- c("ID", "Taxon")
+        colnames(tab.two) <- c("ID", "Taxon")
+        colnames(tab.three) <- c("ID", "Taxon")
+        colnames(tab.four) <- c("ID", "Taxon")
+        colnames(tab.five) <- c("ID", "Taxon")
+        
+        if ( dim(taxon.tab)[1] > 0 ) {
+          
+          i = 1
+          j = 1
+          N.rmd <- N %% 5
+          N.fix <- N + 5 - N.rmd
+          while ( i <= itr) {
+            tab.one  [i,] <- taxon.tab[j,]
+            tab.two  [i,] <- taxon.tab[j+1,]
+            tab.three[i,] <- taxon.tab[j+2,]
+            tab.four [i,] <- taxon.tab[j+3,]
+            tab.five [i,] <- taxon.tab[j+4,]
+            i <- i + 1  
+            j <- j + 5
+          }
+          row.names(tab.one) <- NULL
+          row.names(tab.two) <- NULL
+          row.names(tab.three) <- NULL
+          row.names(tab.four) <- NULL
+          row.names(tab.five) <- NULL
+          
+          tab.one <- na.omit(tab.one)
+          tab.two <- na.omit(tab.two)
+          tab.three <- na.omit(tab.three)
+          tab.four <- na.omit(tab.four)
+          tab.five <- na.omit(tab.five)
+        }
+        
+        output$Ltaxa_display_dend = renderUI({
+          
+          box(title = strong("Dendrogram"), width = 12, status = "primary", solidHeader = TRUE,
+              
+              fluidRow(width = 12, align = "center",
+                       div(style = "display: inline-block:vertical-align:top;", grVizOutput("Ldendrogram", height = 1000, width = 1000)) ),
+              br(),
+              fluidRow(width = 12, align = "center",
+                       tagList(
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("Lbin1_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("Lbin2_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("Lbin3_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("Lbin4_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("Lbin5_taxonlist") )
+                       )
+              )
+          )
         })
         
-        output$dendrogramlong = renderGrViz({
-          taxa.sig.dend(taxa.outputs$DAoutputlong, chooseData$tax.tab, "twopi", include)
+        output$Ldendrogram = renderGrViz({
+          flow.text
         })
         
+        output$Lbin1_taxonlist <- renderText({
+          sig.tab1 <- kable(tab.one, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab1
+        })
+        output$Lbin2_taxonlist <- renderText({
+          sig.tab2 <- kable(tab.two, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab2
+        })
+        output$Lbin3_taxonlist <- renderText({
+          
+          sig.tab3 <- kable(tab.three, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab3
+        })
+        output$Lbin4_taxonlist <- renderText({
+          
+          sig.tab4 <- kable(tab.four, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab4
+        })
+        output$Lbin5_taxonlist <- renderText({
+          
+          sig.tab5 <- kable(tab.five, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab5
+        })
         
         incProgress(1/10, message = "Displaying Results in progress")
         output$downloadTable_taxalong = renderUI({
@@ -4352,25 +4902,6 @@ server = function(input, output, session) {
             zip(zipfile=DA.file, files=dataFiles)
           }
         )
-        
-        # output$tdownloadTabl1long <- downloadHandler(
-        #   filename = function() {
-        #     paste("Taxa.Sum.Table", ".csv", sep="")
-        #   },
-        #   content = function(file) {
-        #     write.list(taxa.results$taxa.bin.sum.out, file, row.names = TRUE)
-        #     
-        #   }
-        # )
-        # 
-        # output$tdownloadTabl2long <- downloadHandler(
-        #   filename = function() {
-        #     paste("Taxa.Analysis.Output", ".csv", sep="")
-        #   },
-        #   content = function(file) {
-        #     write.list(taxa.outputs$DAoutput, file, row.names = TRUE)
-        #   }
-        # )
         
         output$gdownloadlong <- downloadHandler(
           filename = function() {
@@ -4484,34 +5015,24 @@ server = function(input, output, session) {
           incProgress(5/10, message = "GLMM (Beta)")
           if (input$covariates_taxa.long == "None") {
             taxa.con.beta.q.out <- all.taxa.con.glmm.beta(con.var = taxa.results$con.var, id.var = taxa.results$id.var, taxa = taxa.results$taxa, multi.method = "BH")
-            
-            #taxa.data.results$table.out <- taxa.con.beta.q.out
             taxa.outputs$DAoutputlong <- taxa.con.beta.q.out
             
           } else if (input$covariates_taxa.long == "Covariate(s)") {
-            
             taxa.con.cov.beta.q.out <- all.taxa.con.glmm.cov.beta(con.var = taxa.results$con.var, id.var = taxa.results$id.var, cov.var = taxa.results$cov.var, taxa = taxa.results$taxa, multi.method = "BH")
-            
-            #taxa.data.results$table.out <- taxa.con.cov.beta.q.out
             taxa.outputs$DAoutputlong <- taxa.con.cov.beta.q.out
           }
           nrow <- taxa.forest.plot.pages(taxa.outputs$DAoutputlong, species.include = include)
         } else if (input$chooseMethod_taxa.long == "GLMM (Negative Binomial)") {
+          
           incProgress(5/10, message = "GLMM (Negative Binomial)")
           if (input$covariates_taxa.long == "Covariate(s)") {
-            
             taxa.con.cov.glmm.nb.q.out <- all.taxa.con.cov.glmm.nb(con.var = taxa.results$con.var, id.var = taxa.results$id.var, cov.var = taxa.results$cov.var, taxa = taxa.results$taxa, taxa.results$lib.size, multi.method = "BH")
-            
-            #taxa.data.results$table.out <- taxa.con.cov.glmm.nb.q.out
             taxa.outputs$DAoutputlong <- taxa.con.cov.glmm.nb.q.out
             
             nrow <- taxa.forest.plot.pages(taxa.outputs$DAoutputlong, species.include = include)
             
           } else if (input$covariates_taxa.long == "None") {
-            
             taxa.con.glmm.nb.q.out <- all.taxa.con.glmm.nb(con.var = taxa.results$con.var, id.var = taxa.results$id.var, taxa = taxa.results$taxa, taxa.results$lib.size, multi.method = "BH")
-            
-            #taxa.data.results$table.out <- taxa.con.glmm.nb.q.out
             taxa.outputs$DAoutputlong <- taxa.con.glmm.nb.q.out
             
             nrow <- taxa.forest.plot.pages(taxa.outputs$DAoutputlong, species.include = include)
@@ -4521,7 +5042,6 @@ server = function(input, output, session) {
         
         if (any(!is.na(unlist(chooseData$taxa.names.out$duplicates)))) {
           duplicate.taxa <- sapply(strsplit(unlist(chooseData$taxa.names.out$duplicates), " :"),  "[", 1)
-          #sum(!is.na(unlist(chooseData$taxa.names.out$duplicates)))
           taxon.inplot <- unlist(lapply(forestplot.data$all.text.tab, `[`, i =, j = 3))
           duplicate.texts <- sum(duplicate.taxa %in% taxon.inplot)
         } else {
@@ -4560,14 +5080,123 @@ server = function(input, output, session) {
           })
         })
         
-        output$taxa_displaylongd = renderUI({
-          box(title = strong("Dendrogram", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
-              grVizOutput("dendrogramlong", height = 1000))
+        taxa.sig <- taxa.sig.dend(taxa.outputs$DAoutputlong, chooseData$NAadded$tax.tab, "twopi", include)
+        
+        flow.text <- taxa.sig$flow.text
+        taxon.tab <- taxa.sig$taxon.tab
+        ci.tab.all <- taxa.sig$ci.tab.all
+        
+        if ( include == FALSE){
+          taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
+        }
+        
+        if ( length(ci.tab.all) > 1 ){
+          
+          for( i in 1:nrow(taxon.tab)){
+            if ( ci.tab.all[-1][i] < 0){
+              taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "blue")
+              taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+            }
+            else{
+              taxon.tab[i,1] <- cell_spec(taxon.tab[i,1], "html", color = "red")
+              taxon.tab[i,2] <- cell_spec(taxon.tab[i,2], "html", color = "black")
+            }
+            
+          }
+        }
+        
+        N <- dim(taxon.tab)[1]
+        itr <- ceiling(N/5)
+        tab.one   <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.two   <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.three <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.four  <- data.frame( matrix(ncol=2,nrow=0) )
+        tab.five  <- data.frame( matrix(ncol=2,nrow=0) )
+        
+        colnames(tab.one) <- c("ID", "Taxon")
+        colnames(tab.two) <- c("ID", "Taxon")
+        colnames(tab.three) <- c("ID", "Taxon")
+        colnames(tab.four) <- c("ID", "Taxon")
+        colnames(tab.five) <- c("ID", "Taxon")
+        
+        if ( dim(taxon.tab)[1] > 0 ) {
+          
+          i = 1
+          j = 1
+          N.rmd <- N %% 5
+          N.fix <- N + 5 - N.rmd
+          while ( i <= itr) {
+            tab.one  [i,] <- taxon.tab[j,]
+            tab.two  [i,] <- taxon.tab[j+1,]
+            tab.three[i,] <- taxon.tab[j+2,]
+            tab.four [i,] <- taxon.tab[j+3,]
+            tab.five [i,] <- taxon.tab[j+4,]
+            i <- i + 1  
+            j <- j + 5
+          }
+          row.names(tab.one) <- NULL
+          row.names(tab.two) <- NULL
+          row.names(tab.three) <- NULL
+          row.names(tab.four) <- NULL
+          row.names(tab.five) <- NULL
+          
+          tab.one <- na.omit(tab.one)
+          tab.two <- na.omit(tab.two)
+          tab.three <- na.omit(tab.three)
+          tab.four <- na.omit(tab.four)
+          tab.five <- na.omit(tab.five)
+        }
+        
+        output$Ltaxa_display_dend = renderUI({
+          
+          box(title = strong("Dendrogram"), width = 12, status = "primary", solidHeader = TRUE,
+              
+              fluidRow(width = 12, align = "center",
+                       div(style = "display: inline-block:vertical-align:top;", grVizOutput("Ldendrogram", height = 1000, width = 1000)) ),
+              br(),
+              fluidRow(width = 12, align = "center",
+                       tagList(
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("Lcon1_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("Lcon2_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("Lcon3_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("Lcon4_taxonlist") ),
+                         div(style="display: inline-block;vertical-align:top;", htmlOutput("Lcon5_taxonlist") )
+                       )
+              )
+          )
         })
         
-        output$dendrogramlong = renderGrViz({
-          taxa.sig.dend(taxa.outputs$DAoutputlong, chooseData$tax.tab, "twopi", include)
+        output$Ldendrogram = renderGrViz({
+          flow.text
+        })
+        output$Lcon1_taxonlist <- renderText({
+          sig.tab1 <- kable(tab.one, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab1
+        })
+        output$Lcon2_taxonlist <- renderText({
           
+          sig.tab2 <- kable(tab.two, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab2
+        })
+        output$Lcon3_taxonlist <- renderText({
+          
+          sig.tab3 <- kable(tab.three, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab3
+        })
+        output$Lcon4_taxonlist <- renderText({
+          
+          sig.tab4 <- kable(tab.four, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab4
+        })
+        output$Lcon5_taxonlistt <- renderText({
+          
+          sig.tab5 <- kable(tab.five, 'html', booktabs =TRUE, escape = FALSE) %>%
+            kable_styling(latex_options = c('hold_position'))
+          sig.tab5
         })
         
         incProgress(1/10, message = "Displaying Results in progress")
