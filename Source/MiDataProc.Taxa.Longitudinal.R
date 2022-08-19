@@ -190,12 +190,6 @@ taxa.con.id.cov.recode.united.func <- function(sam.dat, sel.con.var, rename.con.
 # Summary statistics #
 ######################
 
-taxa.ind.sum.func <- function(x) {
-  sum.out <- c(length(x), mean(x), quantile(x))
-  names(sum.out) <-  c("N", "Mean", "Minimum", "1st quartile", "Median", "3rd quartile", "Maximum")
-  return(sum.out)
-}
-
 taxa.bin.id.sum.func <- function(bin.var, taxa, sel.ref, sel.com) {
   if(!is.null(taxa)){
     n.taxa <- ncol(taxa)

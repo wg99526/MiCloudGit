@@ -41,8 +41,8 @@ beta.bin.cat.ref.ori.func <- function(sam.dat, sel.bin.var = "ecig_status") {
 
 beta.bin.cat.ref.func <- function(sel.bin.var, sel.ref, sel.com, sam.dat, Ds.Ks) {
   bin.var <- unlist(sam.dat[,sel.bin.var])
-  ind.ref <- which(bin.var == sel.ref)
-  ind.com <- which(bin.var == sel.com)
+  ind.ref <- which(bin.var[1:nrow(Ds.Ks$Ds[[1]])] == sel.ref)
+  ind.com <- which(bin.var[1:nrow(Ds.Ks$Ds[[1]])] == sel.com)
   bin.var <- factor(c(bin.var[ind.ref], bin.var[ind.com]), levels = c(sel.ref, sel.com))
   Ds <- Ds.Ks$Ds
   Ks <- Ds.Ks$Ks
@@ -101,8 +101,8 @@ Ds.Ks.func <- function(rare.biom, biom.after.qc) {
 
 beta.bin.cov.cat.ref.func <- function(sel.bin.var, sel.ref, sel.com, sel.cov.var, sam.dat, Ds.Ks) {  
   bin.var <- unlist(sam.dat[,sel.bin.var])
-  ind.ref <- which(bin.var == sel.ref)
-  ind.com <- which(bin.var == sel.com)
+  ind.ref <- which(bin.var[1:nrow(Ds.Ks$Ds[[1]])] == sel.ref)
+  ind.com <- which(bin.var[1:nrow(Ds.Ks$Ds[[1]])] == sel.com)
   bin.var <- factor(c(bin.var[ind.ref], bin.var[ind.com]), levels = c(sel.ref, sel.com))
   cov.var <- sam.dat[,sel.cov.var]
   cov.var <- as.data.frame(rbind(cov.var[ind.ref,], cov.var[ind.com,]))

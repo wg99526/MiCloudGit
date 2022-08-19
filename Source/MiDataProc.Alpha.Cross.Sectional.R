@@ -65,6 +65,88 @@ tax.tab.clean <- function(tax.tab, rem.tax = rem.tax.d, rem.tax.str = rem.tax.st
   return(tax.tab.hh)
 }
 
+tax.tab.cleanNA <- function(tax.tab, rem.tax = rem.tax.d, rem.tax.str = rem.tax.str.d, na.code = "NANANA") {
+  tax.tab.c <- tax.tab
+  # print(head(tax.tab.c))
+  for (i in 1:ncol(tax.tab)) {
+    taxa <- as.character(tax.tab.c[,i])
+    tax.tab.c[is.na(taxa), i] <- "NA "
+    tax.tab.c[is.element(taxa, rem.tax), i] <- na.code
+    tax.tab.c[grep(paste(rem.tax.str, collapse="|"), taxa), i] <- na.code
+    
+    uniq.taxa <- names(table(taxa))
+    for (j in 1:length(uniq.taxa)) {
+      tax.tab.c[is.element(taxa, paste(uniq.taxa[j], 1:100)), i] <- uniq.taxa[j]
+    }
+  }
+  
+  ind <- which(tax.tab.c[,1] != na.code)
+  tax.tab.c <- tax.tab.c[ind,]
+  tax.tab.h <- tax.tab.c
+  
+  ind <- which(tax.tab.h[,1] != na.code)
+  tax.tab.h[ind ,1] <- paste("k_", tax.tab.h[ind ,1], sep = "")
+  
+  ranks <- c("p_", "c_", "o_", "f_", "g_", "s_")
+  for (i in 1:6) {
+    na.num <- 1
+    ind <- which(tax.tab.h[,i+1] != na.code)
+    ind_omit <- which(tax.tab.h[,i+1] != na.code & tax.tab.h[,i] == na.code)
+    tax.tab.h[ind ,i+1] <- paste(tax.tab.h[ind,i],paste(ranks[i],tax.tab.h[ind,i+1], sep = ""), sep = ";")
+    # tax.tab.h[ind ,i+1] <- apply(as.matrix(tax.tab.h[ind ,i+1]), 1, function(x) 
+    #   if(substring(x, nchar(x)-2) == "_NA") {
+    #     x <- paste0(x, na.num); na.num <- na.num +1
+    #     print(na.num)
+    #   } else { 
+    #     x <- x
+    #   })
+    # for(k in 1:length(tax.tab.h[ind, i+1])){
+    #   if(substring(tax.tab.h[ind, i+1][k], nchar(tax.tab.h[ind, i+1][k])-2) == "_NA") {
+    #     print(tax.tab.h[ind, i+1][k])
+    #     tax.tab.h[ind, i+1] <- paste0(substring(tax.tab.h[ind, i+1], na.num))
+    #     na.num <- na.num + 1          
+    #   }
+    # }
+    # if(substring(tax.tab.h[ind ,i+1], nchar(tax.tab.h[ind ,i+1])-2))
+    
+    if(length(ind_omit)!=0) tax.tab.h[ind_omit,c((i+1):7)] = na.code
+  }
+  
+  # ind <- which(tax.tab.h[,2] != na.code)
+  # ind_omit <- which(tax.tab.h[,2] != na.code & tax.tab.h[,1] == na.code)
+  # tax.tab.h[ind ,2] <- paste(tax.tab.h[ind,1],paste("p_",tax.tab.h[ind,2], sep = ""), sep = ";")
+  # if(length(ind_omit)!=0) tax.tab.h[ind_omit,c(2:7)] = na.code
+  # 
+  # ind <- which(tax.tab.h[,3] != na.code)
+  # ind_omit <- which(tax.tab.h[,3] != na.code & tax.tab.h[,2] == na.code)
+  # tax.tab.h[ind ,3] <- paste(tax.tab.h[ind,2],paste("c_",tax.tab.h[ind,3], sep = ""), sep = ";")
+  # if(length(ind_omit)!=0) tax.tab.h[ind_omit,c(3:7)] = na.code
+  # 
+  # ind <- which(tax.tab.h[,4] != na.code)
+  # ind_omit <- which(tax.tab.h[,4] != na.code & tax.tab.h[,3] == na.code)
+  # tax.tab.h[ind ,4] <- paste(tax.tab.h[ind,3],paste("o_",tax.tab.h[ind,4], sep = ""), sep = ";")
+  # if(length(ind_omit)!=0) tax.tab.h[ind_omit,c(4:7)] = na.code
+  # 
+  # ind <- which(tax.tab.h[,5] != na.code)
+  # ind_omit <- which(tax.tab.h[,5] != na.code & tax.tab.h[,4] == na.code)
+  # tax.tab.h[ind ,5] <- paste(tax.tab.h[ind,4],paste("f_",tax.tab.h[ind,5], sep = ""), sep = ";")
+  # if(length(ind_omit)!=0) tax.tab.h[ind_omit,c(5:7)] = na.code
+  # 
+  # ind <- which(tax.tab.h[,6] != na.code)
+  # ind_omit <- which(tax.tab.h[,6] != na.code & tax.tab.h[,5] == na.code)
+  # tax.tab.h[ind ,6] <- paste(tax.tab.h[ind,5],paste("g_",tax.tab.h[ind,6], sep = ""), sep = ";")
+  # if(length(ind_omit)!=0) tax.tab.h[ind_omit,c(6:7)] = na.code
+  # 
+  # ind <- which(tax.tab.h[,7] != na.code)
+  # ind_omit <- which(tax.tab.h[,7] != na.code & tax.tab.h[,6] == na.code)
+  # tax.tab.h[ind ,7] <- paste(tax.tab.h[ind,6],paste("s_",tax.tab.h[ind,7], sep = ""), sep = ";")
+  # if(length(ind_omit)!=0) tax.tab.h[ind_omit,7] = na.code
+  
+  tax.tab.hh <- tax.tab.h
+  
+  return(tax.tab.hh)
+}
+
 otu.tab.clean <- function(biom, lib.size.cut.off = 3000, mean.prop.cut.off = 2e-05) {
   
   otu.tab <- otu_table(biom)
@@ -132,6 +214,55 @@ biom.clean <- function(biom, rem.tax = rem.tax.d, rem.tax.str = rem.tax.str.d, k
   }
   if (tax.tab.c) {
     tax.tab <- tax.tab.clean(tax.tab, rem.tax = rem.tax, rem.tax.str = rem.tax.str)
+  }
+  biom <- merge_phyloseq(otu.tab, tax.tab, tree, sam.dat)
+  
+  biom <- otu.tab.clean(biom, lib.size.cut.off, mean.prop.cut.off)
+  
+  return(biom)  
+}
+
+biom.cleanNA <- function(biom, rem.tax = rem.tax.d, rem.tax.str = rem.tax.str.d, kingdom = "Bacteria", tax.tab.c = TRUE, lib.size.cut.off = 3000, mean.prop.cut.off = 2e-05) {
+  
+  tax.tab <- tax_table(biom)
+  
+  if (kingdom != "all") {
+    
+    ind <- is.element(tax.tab[,1], kingdom)
+    rownames(tax.tab)[ind]
+    biom <- prune_taxa(rownames(tax.tab)[ind], biom)
+  }
+  
+  otu.tab <- otu_table(biom)
+  tax.tab <- tax_table(biom)
+  tree <- phy_tree(biom)
+  sam.dat <- sample_data(biom)
+  
+  ind.otu.sam <- is.element(dim(otu.tab), nrow(sam.dat))
+  if (sum(ind.otu.sam) == 0) {
+    stop("the numbers of subjects (n) in OTU table and sample data are not the same")
+  }
+  if (sum(ind.otu.sam) == 1 & ind.otu.sam[1]) {
+    otu.tab <- t(otu.tab)
+  }
+  if (!identical(colnames(otu.tab), rownames(sam.dat))) {
+    stop("subject IDs (colunm names of OTU table and row names of sample data) are not the same")
+  }
+  ind.com.otu <- intersect(intersect(rownames(otu.tab), tree$tip.label), rownames(tax.tab))
+  if (length(ind.com.otu) == 0) {
+    stop("there is no common OTUs among OTU table, taxonomic table and tree tip labels")
+  }
+  
+  ind.com.1 <- which(rownames(otu.tab) %in% ind.com.otu)
+  otu.tab <- otu.tab[ind.com.1,]
+  ind.com.2 <- which(rownames(tax.tab) %in% ind.com.otu)
+  tax.tab <- tax.tab[ind.com.2,]
+  tree <- prune_taxa(ind.com.otu, tree)
+  if(!is.rooted(tree)) {
+    tree <- phangorn::midpoint(tree)
+  }
+  if (tax.tab.c) {
+    tax.tab <- tax.tab.cleanNA(tax.tab, rem.tax = rem.tax, rem.tax.str = rem.tax.str)
   }
   biom <- merge_phyloseq(otu.tab, tax.tab, tree, sam.dat)
   
@@ -440,7 +571,7 @@ alpha.bin.cat.ref.func <- function(sel.bin.var, sel.ref, sel.com, sam.dat, alpha
 }
 
 alpha.ind.sum.func <- function(x) {
-  sum.out <- c(length(x), mean(x), quantile(x))
+  sum.out <- c(length(x), mean(x, na.rm = TRUE), quantile(x, na.rm = TRUE))
   names(sum.out) <-  c("N", "Mean", "Minimum", "1st quartile", "Median", "3rd quartile", "Maximum")
   return(sum.out)
 }
@@ -800,8 +931,8 @@ alpha.con.cov.recode.func <- function(sam.dat, sel.con.var, sel.cov.var, rename.
   ind.sel <- which(colnames(sam.dat) == sel.con.var)
   colnames(sam.dat)[ind.sel] <- rename.con.var
   ind.nona <- !is.na(sam.dat[,ind.sel])
-  con.var <- as.data.frame(as.matrix(sam.dat[ind.nona,ind.sel]))
-  cov.var <- as.data.frame(as.matrix(sam.dat[ind.nona, sel.cov.var]))
+  con.var <- as.data.frame(as.matrix(sam.dat[ind.nona, ind.sel]))
+  cov.var <- as.data.frame(sam.dat[ind.nona, sel.cov.var])
   colnames(cov.var) <- sel.cov.var
   alpha.div = alpha.div[ind.nona,]
   return(list(con.var = con.var, cov.var = cov.var, alpha.div = alpha.div))

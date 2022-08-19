@@ -34,23 +34,6 @@ beta.bin.cat.ref.ori.func <- function(sam.dat, sel.bin.var = "ecig_status") {
   return(levels(as.factor(as.data.frame(as.matrix(sam.dat))[,sel.bin.var])))
 }
 
-beta.bin.cat.ref.func <- function(sel.bin.var, sel.ref, sel.com, sam.dat, Ds.Ks) {
-  bin.var <- unlist(sam.dat[,sel.bin.var])
-  ind.ref <- which(bin.var == sel.ref)
-  ind.com <- which(bin.var == sel.com)
-  bin.var <- factor(c(bin.var[ind.ref], bin.var[ind.com]), levels = c(sel.ref, sel.com))
-  Ds <- Ds.Ks$Ds
-  Ks <- Ds.Ks$Ks
-  for (i in 1:length(Ds)) {
-    Ds[[i]] <- Ds[[i]][c(ind.ref, ind.com), c(ind.ref, ind.com)]
-  }
-  for (i in 1:length(Ks)) {
-    Ks[[i]] <- Ks[[i]][c(ind.ref, ind.com), c(ind.ref, ind.com)]
-  }
-  
-  return(list(bin.var = bin.var, Ds = Ds, Ks = Ks))
-}
-
 beta.bin.cat.recode.func <- function(sam.dat, sel.bin.var = "ecig_status", ori.cat, rename.ref, rename.com) {
   ind.ref <- which(sam.dat[,sel.bin.var] == ori.cat[1])
   ind.com <- which(sam.dat[,sel.bin.var] == ori.cat[2])
@@ -114,8 +97,8 @@ beta.bin.cat.recode.func <- function(sam.dat, sel.bin.var = "ecig_status", ori.c
 
 beta.bin.id.cat.ref.func <- function(sel.bin.var, sel.ref, sel.com, sel.id.var, sam.dat, Ds.Ks) {  
   bin.var <- unlist(sam.dat[,sel.bin.var])
-  ind.ref <- which(bin.var == sel.ref)
-  ind.com <- which(bin.var == sel.com)
+  ind.ref <- which(bin.var[1:nrow(Ds.Ks$Ds[[1]])] == sel.ref)
+  ind.com <- which(bin.var[1:nrow(Ds.Ks$Ds[[1]])] == sel.com)
   bin.var <- factor(c(bin.var[ind.ref], bin.var[ind.com]), levels = c(sel.ref, sel.com))
   id.var <- sam.dat[,sel.id.var]
   id.var <- as.data.frame(rbind(id.var[ind.ref,], id.var[ind.com,]))
@@ -133,8 +116,8 @@ beta.bin.id.cat.ref.func <- function(sel.bin.var, sel.ref, sel.com, sel.id.var, 
 
 beta.bin.id.cov.cat.ref.func <- function(sel.bin.var, sel.ref, sel.com, sel.id.var, sel.cov.var, sam.dat, Ds.Ks) {  
   bin.var <- unlist(sam.dat[,sel.bin.var])
-  ind.ref <- which(bin.var == sel.ref)
-  ind.com <- which(bin.var == sel.com)
+  ind.ref <- which(bin.var[1:nrow(Ds.Ks$Ds[[1]])] == sel.ref)
+  ind.com <- which(bin.var[1:nrow(Ds.Ks$Ds[[1]])] == sel.com)
   bin.var <- factor(c(bin.var[ind.ref], bin.var[ind.com]), levels = c(sel.ref, sel.com))
   id.var <- sam.dat[,sel.id.var]
   id.var <- as.data.frame(rbind(id.var[ind.ref,], id.var[ind.com,]))

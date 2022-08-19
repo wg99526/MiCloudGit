@@ -35,9 +35,11 @@ tax.trans <- function(otu.tab, tax.tab, rare.otu.tab, rare.tax.tab, sub.com = TR
   tax.imp.prop.out <- list()
   tax.clr.out <- list()
   tax.sub.clr.out <- list()
+  tax.arc.sin.out <- list()
   
   for (j in 1:6) {
     tax <- as.vector(unique(tax.tab[,j+1]))
+    
     tax.count <- matrix(NA, n, length(tax))
     for (i in 1:length(tax)) {
       ind.tax <- which(tax.tab[,j+1] == tax[i])
@@ -75,6 +77,13 @@ tax.trans <- function(otu.tab, tax.tab, rare.otu.tab, rare.tax.tab, sub.com = TR
     rownames(tax.rare.count) <- colnames(rare.otu.tab)
     colnames(tax.rare.count) <- rare.tax
     
+    tax.arc.sin <- matrix(NA, n, length(tax))
+    for (i in 1:length(lib.size)) {
+      tax.arc.sin[i,] <- asin(sqrt(tax.prop[i,]))
+    }
+    rownames(tax.arc.sin) <- colnames(otu.tab)
+    colnames(tax.arc.sin) <- tax
+    
     ind <- which(tax == na.code)
     if (length(ind) != 0) {
       tax.count.out[[j]] <- as.data.frame(tax.count[,-ind])
@@ -83,6 +92,7 @@ tax.trans <- function(otu.tab, tax.tab, rare.otu.tab, rare.tax.tab, sub.com = TR
       tax.imp.prop.out[[j]] <- tax.sub.imp.prop <- as.data.frame(tax.imp.prop[,-ind])
       tax.clr.out[[j]] <- as.data.frame(tax.clr[,-ind])
       tax.sub.clr.out[[j]] <- as.data.frame(compositions::clr(tax.sub.imp.prop))
+      tax.arc.sin.out[[j]] <- as.data.frame(tax.arc.sin[,-ind])
     }else{
       tax.count.out[[j]] <- as.data.frame(tax.count)
       tax.rare.count.out[[j]] <- as.data.frame(tax.rare.count)
@@ -90,6 +100,7 @@ tax.trans <- function(otu.tab, tax.tab, rare.otu.tab, rare.tax.tab, sub.com = TR
       tax.imp.prop.out[[j]] <- tax.sub.imp.prop <- as.data.frame(tax.imp.prop)
       tax.clr.out[[j]] <- as.data.frame(tax.clr)
       tax.sub.clr.out[[j]] <- as.data.frame(compositions::clr(tax.sub.imp.prop))
+      tax.arc.sin.out[[j]] <- as.data.frame(tax.arc.sin)
     }
   }
   
@@ -99,14 +110,188 @@ tax.trans <- function(otu.tab, tax.tab, rare.otu.tab, rare.tax.tab, sub.com = TR
   names(tax.imp.prop.out) <- c("phylum", "class", "order", "family", "genus", "species")
   names(tax.clr.out) <- c("phylum", "class", "order", "family", "genus", "species")
   names(tax.sub.clr.out) <- c("phylum", "class", "order", "family", "genus", "species")
+  names(tax.arc.sin.out) <- c("phylum", "class", "order", "family", "genus", "species")
   
   if (sub.com) {
-    return(list(count = tax.count.out, rare.count = tax.rare.count.out, imp.prop = tax.imp.prop.out, prop = tax.prop.out, clr = tax.sub.clr.out))
+    return(list(count = tax.count.out, rare.count = tax.rare.count.out, imp.prop = tax.imp.prop.out, prop = tax.prop.out, 
+                clr = tax.sub.clr.out, arcsin = tax.arc.sin.out))
   }
   if (!sub.com) {
-    return(list(count = tax.count.out, rare.count = tax.rare.count.out, imp.prop = tax.imp.prop.out, prop = tax.prop.out, clr = tax.clr.out))
+    return(list(count = tax.count.out, rare.count = tax.rare.count.out, imp.prop = tax.imp.prop.out, prop = tax.prop.out, 
+                clr = tax.clr.out, arcsin = tax.arc.sin.out))
   }
   
+}
+
+tax.trans.na <- function(otu.tab, tax.tab, rare.otu.tab, rare.tax.tab, sub.com = TRUE, na.code = "") {
+  
+  # tax.tab <- matrix(nrow = nrow(tax.tab.ori), ncol = ncol(tax.tab.ori))
+  
+  n <- ncol(otu.tab)
+  lib.size <- colSums(otu.tab)
+  rare.n <- ncol(rare.otu.tab)
+  
+  tax.count.out <- list()
+  tax.rare.count.out <- list()
+  tax.prop.out <- list()
+  tax.imp.prop.out <- list()
+  tax.clr.out <- list()
+  tax.sub.clr.out <- list()
+  tax.arc.sin.out <- list()
+  
+  for (j in 1:6) {
+    tax <- as.vector(unique(tax.tab[,j+1]))
+    
+    na.num <- 1
+    for(i in 1:length(tax)) {
+      na.taxa <- substring(tax[i], nchar(tax[i])-2)
+      if(na.taxa == "_NA") {
+        new.tax <- paste0(tax[i], na.num)
+        ind.na.tab <- which(tax.tab[,j+1] == tax[i])
+        tax.tab[ind.na.tab, j+1] <<- new.tax
+        rare.tax.tab[ind.na.tab, j+1] <<- new.tax
+        tax[i] <- new.tax
+        na.num <- na.num + 1
+      }
+      
+    }
+    
+    
+    tax.count <- matrix(NA, n, length(tax))
+    for (i in 1:length(tax)) {
+      ind.tax <- which(tax.tab[,j+1] == tax[i])
+      tax.count[,i] <- colSums(otu.tab[ind.tax,])
+    }
+    rownames(tax.count) <- colnames(otu.tab)
+    colnames(tax.count) <- tax
+    
+    tax.prop <- matrix(NA, n, length(tax))
+    for (i in 1:length(lib.size)) {
+      tax.prop[i,] <- tax.count[i,]/lib.size[i]
+    }
+    rownames(tax.prop) <- colnames(otu.tab)
+    colnames(tax.prop) <- tax
+    
+    tax.imp.prop <- numeric()
+    try(tax.imp.prop <- zCompositions::cmultRepl(tax.count), silent = TRUE)
+    if(length(tax.imp.prop) == 0) {
+      tax.imp.prop <- matrix(NA, n, length(tax))
+      for (i in 1:length(lib.size)) {
+        tax.imp.prop[i,] <- (tax.count[i,]+0.1)/lib.size[i]
+      }
+      rownames(tax.imp.prop) <- colnames(otu.tab)
+      colnames(tax.imp.prop) <- tax
+    }
+    
+    tax.clr <- compositions::clr(tax.imp.prop)
+    
+    rare.tax <- as.vector(unique(rare.tax.tab[,j+1]))
+    tax.rare.count <- matrix(NA, rare.n, length(rare.tax))
+    for (i in 1:length(rare.tax)) {
+      ind.tax <- which(rare.tax.tab[,j+1] == rare.tax[i])
+      tax.rare.count[,i] <- colSums(rare.otu.tab[ind.tax,])
+    }
+    rownames(tax.rare.count) <- colnames(rare.otu.tab)
+    colnames(tax.rare.count) <- rare.tax
+    
+    tax.arc.sin <- matrix(NA, n, length(tax))
+    for (i in 1:length(lib.size)) {
+      tax.arc.sin[i,] <- asin(sqrt(tax.prop[i,]))
+    }
+    rownames(tax.arc.sin) <- colnames(otu.tab)
+    colnames(tax.arc.sin) <- tax
+    
+    ind <- which(tax == na.code)
+    if (length(ind) != 0) {
+      tax.count.out[[j]] <- as.data.frame(tax.count[,-ind])
+      tax.rare.count.out[[j]] <- as.data.frame(tax.rare.count[,-ind])
+      tax.prop.out[[j]] <- as.data.frame(tax.prop[,-ind])
+      tax.imp.prop.out[[j]] <- tax.sub.imp.prop <- as.data.frame(tax.imp.prop[,-ind])
+      tax.clr.out[[j]] <- as.data.frame(tax.clr[,-ind])
+      tax.sub.clr.out[[j]] <- as.data.frame(compositions::clr(tax.sub.imp.prop))
+      tax.arc.sin.out[[j]] <- as.data.frame(tax.arc.sin[,-ind])
+    }else{
+      tax.count.out[[j]] <- as.data.frame(tax.count)
+      tax.rare.count.out[[j]] <- as.data.frame(tax.rare.count)
+      tax.prop.out[[j]] <- as.data.frame(tax.prop)
+      tax.imp.prop.out[[j]] <- tax.sub.imp.prop <- as.data.frame(tax.imp.prop)
+      tax.clr.out[[j]] <- as.data.frame(tax.clr)
+      tax.sub.clr.out[[j]] <- as.data.frame(compositions::clr(tax.sub.imp.prop))
+      tax.arc.sin.out[[j]] <- as.data.frame(tax.arc.sin)
+    }
+  }
+  
+  names(tax.count.out) <- c("phylum", "class", "order", "family", "genus", "species")
+  names(tax.rare.count.out) <- c("phylum", "class", "order", "family", "genus", "species")
+  names(tax.prop.out) <- c("phylum", "class", "order", "family", "genus", "species")
+  names(tax.imp.prop.out) <- c("phylum", "class", "order", "family", "genus", "species")
+  names(tax.clr.out) <- c("phylum", "class", "order", "family", "genus", "species")
+  names(tax.sub.clr.out) <- c("phylum", "class", "order", "family", "genus", "species")
+  names(tax.arc.sin.out) <- c("phylum", "class", "order", "family", "genus", "species")
+  
+  if (sub.com) {
+    return(list(count = tax.count.out, rare.count = tax.rare.count.out, imp.prop = tax.imp.prop.out, prop = tax.prop.out, 
+                clr = tax.sub.clr.out, arcsin = tax.arc.sin.out))
+  }
+  if (!sub.com) {
+    return(list(count = tax.count.out, rare.count = tax.rare.count.out, imp.prop = tax.imp.prop.out, prop = tax.prop.out, 
+                clr = tax.clr.out, arcsin = tax.arc.sin.out))
+  }
+  
+  
+}
+
+add_NA <- function(taxa.out, tax.tab) {
+  taxa.out.ori <- taxa.out
+  tax.tab <- as.data.frame(tax.tab)
+  for(type in 1:length(taxa.out)) {
+    na.num <- 1
+    for (rank in 1:6) {
+      for (i in 1:length(colnames(taxa.out[[type]][[rank]]))) {
+        if(substring(colnames(taxa.out[[type]][[rank]])[i], nchar(colnames(taxa.out[[type]][[rank]])[i])-2) == "NA ") {
+          colnames(taxa.out[[type]][[rank]])[i] <- paste0(colnames(taxa.out[[type]][[rank]])[i], na.num)
+          na.num <- na.num + 1
+        }
+      }
+    }
+    for (rank in 1:5) {
+      for (i in 1:length(colnames(taxa.out[[type]][[rank]]))){
+        colnames(taxa.out[[type]][[rank+1]]) <- str_replace(colnames(taxa.out[[type]][[rank+1]]), colnames(taxa.out.ori[[type]][[rank]])[i], colnames(taxa.out[[type]][[rank]])[i])
+      }
+    }
+    
+    for(rank in 1:6) {
+      for(i in 1:length(unique(colnames(taxa.out[[type]][[rank]])))) {
+        ind <- tax.tab[[rank+1]] == unique(colnames(taxa.out.ori[[type]][[rank]]))[i]
+        
+        tax.tab[[rank+1]][ind] <- unique(colnames(taxa.out[[type]][[rank]]))[i]
+      }
+    }
+  }
+  return(list(taxa.out = taxa.out, tax.tab = tax.tab))
+}
+
+remove.NA.out <- function(bin.out, test.out, names) {
+  remove.out <- lapply(test.out, function(x) {
+    ind <- grep("_NA ", rownames(x))
+    x <- x[-ind,]
+  })
+  
+  remove.names <- names
+  
+  remove.names$names <- lapply(names$names, function(x) {
+    ind <- grep("NA ", x)
+    x <- x[-ind]
+  })
+  
+  remove.bin <- bin.out
+  
+  remove.bin$taxa <- lapply(bin.out$taxa, function(x) {
+    ind <- grep("_NA ", colnames(x))
+    x <- x[,-ind]
+  })
+  
+  return(list(bin.out = remove.bin, test.out = remove.out, names.out = remove.names))
 }
 
 ########
@@ -1156,7 +1341,15 @@ taxa.forest.plot.pages2 <- function(page.taxa.q.out, page) {
     text.tab.all[,3] <- substr(text.tab.all[,3], 1, 55)
     #par(mar=c(0, 0.2, 0, 0.2))
     if(text.tab.all[1,4] == "Est."){
-      if(nrow(ci.tab.all) <= 45){
+      if(nrow(ci.tab.all) <= 10) {
+        forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3],
+                   hrzl_lines=TRUE, new_page=TRUE, boxsize=0.25, grid=0, colgap = unit(1, "cm"), graphwidth = unit(6, "cm"), lineheight = unit(0.85, "cm"), #line.margin = unit(0.2, "cm"),
+                   col=fpColors(box=rgb(1,0,0,0.5), line="black", summary="red3"), xlab="95% Confidence Interval", mar = unit(c(0.5,0,0.5,0), "cm"), #mar = unit(c(blank.space,0,0,0), "cm"),
+                   txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.75), gpar(fontfamily="", cex=0.75)),
+                                  ticks=gpar(fontfamily="", cex=0.75),
+                                  xlab=gpar(fontfamily="", cex=0.75)))
+      }
+      else if(nrow(ci.tab.all) <= 45){
         forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3],
                    hrzl_lines=TRUE, new_page=TRUE, boxsize=0.25, grid=0, colgap = unit(1, "cm"), graphwidth = unit(6, "cm"), lineheight = "lines", line.margin = unit(0.12, "cm"),
                    col=fpColors(box=rgb(1,0,0,0.5), line="black", summary="red3"), xlab="95% Confidence Interval", mar = unit(c(0.5,0,0.5,0), "cm"), #mar = unit(c(blank.space,0,0,0), "cm"),
@@ -1173,7 +1366,15 @@ taxa.forest.plot.pages2 <- function(page.taxa.q.out, page) {
       }
       
     } else {
-      if(nrow(ci.tab.all) <= 45){
+      if(nrow(ci.tab.all) <= 10) {
+        forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3],
+                   hrzl_lines=TRUE, new_page=TRUE, boxsize=0.25, grid=0, colgap = unit(1, "cm"), graphwidth = unit(6, "cm"), lineheight = unit(0.85, "cm"), #line.margin = unit(0.2, "cm"),
+                   col=fpColors(box=rgb(1,0,0,0.5), line="black", summary="red3"), xlab="95% Confidence Interval", mar = unit(c(0.5,0,0.5,0), "cm"), #mar = unit(c(blank.space,0,0,0), "cm"),
+                   txt_gp=fpTxtGp(label=list(gpar(fontfamily="", cex=0.75), gpar(fontfamily="", cex=0.75)),
+                                  ticks=gpar(fontfamily="", cex=0.75),
+                                  xlab=gpar(fontfamily="", cex=0.75)))
+      }
+      else if(nrow(ci.tab.all) <= 45){
         forestplot(labeltext=text.tab.all, mean=ci.tab.all[,1], lower=ci.tab.all[,2], upper=ci.tab.all[,3],
                    zero = 1, hrzl_lines=TRUE, new_page=TRUE, boxsize=0.25, grid=0, colgap = unit(1, "cm"), graphwidth = unit(6, "cm"), lineheight = "lines", line.margin = unit(0.12, "cm"),
                    col=fpColors(box=rgb(1,0,0,0.5), line="black", summary="red3"), xlab="95% Confidence Interval", mar = unit(c(0.5,0,0.5,0), "cm"), #mar = unit(c(blank.space,0,0,0), "cm"),
@@ -1645,6 +1846,47 @@ p.value.0.1 <- function(x, round.x = 3) {
   return(x)
 }
 
+taxa.names.rank <- function(taxa.out){ 
+  taxon.names <- list()
+  taxon.names <- lapply(taxa.out, function(x) str_split(names(x), ";"))
+  dup.list <- list(NA,NA,NA,NA,NA,NA)
+  
+  ranks <- c("K_", "P_", "C_", "O_", "F_", "G_", "S_")
+  
+  taxon.names.rank <- list()
+  for(rank in 1:6){
+    taxon <- lapply(taxon.names[[rank]], function(x) str_sub(x,start = 3))
+    taxon.names.rank[[rank]] <- sapply(taxon, tail, 1)
+    
+    if(length(taxon.names.rank[[rank]]) != length(unique(taxon.names.rank[[rank]]))){
+      duplicated.taxons <- unique(taxon.names.rank[[rank]][duplicated(taxon.names.rank[[rank]])])
+      
+      for(i in 1:length(duplicated.taxons)){
+        duplicated.taxon <- duplicated.taxons[i]
+        ind.dup <- which(taxon.names.rank[[rank]] %in% duplicated.taxon)
+        
+        if(duplicated.taxon == "NA") {
+          for(k in 1:length(ind.dup)){
+            #duplicated.taxon <- paste(duplicated.taxon, k,collapse = "")
+            duplicated.taxon <- paste0("NA",k)
+            taxon.names.rank[[rank]][ind.dup[k]] <- duplicated.taxon 
+            dup.list[[rank]][k] <- paste(duplicated.taxon, " : ", paste(paste(ranks[1:(rank+1)], unlist(taxon[ind.dup[k]]), sep = ""), collapse = " | "), sep = "")
+          }
+        } else {
+          for(j in 1:length(ind.dup)){
+            duplicated.taxon <- paste(duplicated.taxon,"*",collapse = "")
+            taxon.names.rank[[rank]][ind.dup[j]] <- duplicated.taxon 
+            dup.list[[rank]][j] <- paste(duplicated.taxon, " : ", paste(paste(ranks[1:(rank+1)], unlist(taxon[ind.dup[j]]), sep = ""), collapse = " | "), sep = "")
+          }
+        }
+        
+      }
+    }
+  }
+  names(taxon.names.rank) <- names(taxa.out)
+  return(list(names = taxon.names.rank, duplicates = dup.list))
+}
+
 ###################
 # Which variable? #
 ###################
@@ -1656,39 +1898,45 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   text.tab.all <- matrix(c("Rank", "Taxon", "Est.", "P-value", "Q-value"), 1, 5)
   ci.tab.all <- matrix(NA, 1, 1)
   for (i in 1:6) {
-      ind.sig <- which(out[[i]]$Q.value < 0.05)
-      if (length(ind.sig) >= 1) {
-        sig.out <- out[[i]][ind.sig,]
-        taxa <- rownames(sig.out)
-        text.tab <- cbind(rep(names(out)[i], length(ind.sig)), taxa, format(round(sig.out[,1], 3), nsmall = 3), 
-                          format(round(sig.out[,"P.value"], 3), nsmall = 3), 
-                          format(round(sig.out[,"Q.value"], 3), nsmall = 3))
-        ci.tab <- cbind(sig.out[,1])
-        text.tab.all <- rbind(text.tab.all, text.tab)
-        ci.tab.all <- rbind(ci.tab.all, ci.tab)
-      }
+    ind.sig <- which(out[[i]]$Q.value < 0.05)
+    if (length(ind.sig) >= 1) {
+      sig.out <- out[[i]][ind.sig,]
+      taxa <- rownames(sig.out)
+      text.tab <- cbind(rep(names(out)[i], length(ind.sig)), taxa, format(round(sig.out[,1], 3), nsmall = 3), 
+                        format(round(sig.out[,"P.value"], 3), nsmall = 3), 
+                        format(round(sig.out[,"Q.value"], 3), nsmall = 3))
+      ci.tab <- cbind(sig.out[,1])
+      text.tab.all <- rbind(text.tab.all, text.tab)
+      ci.tab.all <- rbind(ci.tab.all, ci.tab)
+    }
   }
   
   text.tab.all <- cbind(c("ID", 1:(nrow(text.tab.all)-1)), text.tab.all)
   tax.tab.num <- as.matrix(as.data.frame(tax.tab))
+  tax.tab.numNA <- as.matrix(as.data.frame(tax.tab))
   
   for (i in 1:6) {
     ind <- which(tax.tab.num[,i+1] == "NANANA")
     if (length(ind) >= 1) {
       tax.tab.num[ind,i+1] <- NA
-    } 
+    }
   }
+  rank <- 1
   for (tax.rank in c("Phylum", "Class", "Order", "Family", "Genus", "Species")) {
     ind.sig <- which(text.tab.all[,2] == tax.rank)
+    rank.list <- c("p_", "c_", "o_", "f_", "g_", "s_")
     if (length(ind.sig) >= 1) {
       sig.taxa <- text.tab.all[ind.sig,3]
-      ind.non.sig <- which(!(tax.tab.num[,tax.rank] %in% sig.taxa))
-      non.sig.taxa <- names(table(tax.tab.num[ind.non.sig,tax.rank]))
+      ind.non.sig <- which(tax.tab.num[,tax.rank] %in% sig.taxa)
       
-      for (i in 1:length(non.sig.taxa)) {
-        ind <- which(tax.tab.num[,tax.rank] == non.sig.taxa[i])
-        tax.tab.num[ind,tax.rank] <- paste(tax.rank, i, sep = "", collapse = "")
+      if(length(ind.non.sig) >0) {
+        non.sig.taxa <- names(table(tax.tab.num[-ind.non.sig,tax.rank]))
+        for (i in 1:length(non.sig.taxa)) {
+          ind <- which(tax.tab.num[,tax.rank] == non.sig.taxa[i])
+          tax.tab.num[ind,tax.rank] <- paste(tax.rank, i, sep = "", collapse = "")
+        }
       }
+      
       for (i in 1:length(sig.taxa)) {
         ind <- which(text.tab.all[,3] == sig.taxa[i])
         ind.rank <- which(text.tab.all[,2] == tax.rank)
@@ -1697,6 +1945,15 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
         ind.num <- which(tax.tab.num[,tax.rank] == sig.taxa[i])
         tax.tab.num[ind.num,tax.rank] <- sig.taxa.num
       }
+      ind.na <- grepl("_NA ", tax.tab.numNA[,tax.rank])
+      
+      if(sum(ind.na) > 0){
+        na.name.rank <- unlist(lapply(str_split(tax.tab.numNA[ind.na,tax.rank], ";"), function(x) {x <- x[length(x)]}))
+        tax.tab.numNA[ind.na,tax.rank] <- str_remove_all(na.name.rank, rank.list[rank])
+        tax.tab.num[ind.na,tax.rank] <- str_remove_all(na.name.rank, rank.list[rank])
+        
+      }
+      rank <- rank+1
       
     } else {
       non.sig.taxa <- names(table(tax.tab.num[,tax.rank]))
@@ -1704,6 +1961,18 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
         ind <- which(tax.tab.num[,tax.rank] == non.sig.taxa[i])
         tax.tab.num[ind,tax.rank] <- paste(tax.rank, i, sep = "", collapse = "")
       }
+      for (i in 1:length(non.sig.taxa)) {
+        ind <- which(tax.tab.num[,tax.rank] == non.sig.taxa[i])
+        tax.tab.num[ind,tax.rank] <- paste(tax.rank, i, sep = "", collapse = "")
+      }
+      ind.na <- grepl("_NA ", tax.tab.numNA[,tax.rank])
+      
+      if(sum(ind.na) > 0){
+        na.name.rank <- unlist(lapply(str_split(tax.tab.numNA[ind.na,tax.rank], ";"), function(x) {x <- x[length(x)]}))
+        tax.tab.numNA[ind.na,tax.rank] <- str_remove_all(na.name.rank, rank.list[rank])
+        tax.tab.num[ind.na,tax.rank] <- str_remove_all(na.name.rank, rank.list[rank])
+      }
+      rank <- rank+1
     }
   }
   all.phylum <- tax.tab.num[,"Phylum"]
@@ -1732,19 +2001,20 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   ind <- as.numeric(sig.Phylum)+1
   
   ind.pos.sig <- which(ci.tab.all[ind,1] >= 0)
-  ind.neg.sig <- which(ci.tab.all[ind,1] < 0) 
+  ind.neg.sig <- which(ci.tab.all[ind,1] < 0)
   
   pos.sig.Phylum <- sig.Phylum[ind.pos.sig] 
   neg.sig.Phylum <- sig.Phylum[ind.neg.sig]
-  non.sig.Phylum <- Phylum[!is.element(Phylum,c(pos.sig.Phylum, neg.sig.Phylum))]
+  na.Phylum <- Phylum[grepl("NA", Phylum)]
+  non.sig.Phylum <- Phylum[!is.element(Phylum,c(pos.sig.Phylum, neg.sig.Phylum, na.Phylum))]
   
   dummy <- c()
   for(i in 1:sum(!is.na(Phylum))){
     dummy <- c(dummy, paste0("dum",i))
   }
   
-  phylum.wdum1 <- c(pos.sig.Phylum, neg.sig.Phylum, non.sig.Phylum)
-  phylum.wdum2 <- c(pos.sig.Phylum, neg.sig.Phylum, non.sig.Phylum)
+  phylum.wdum1 <- c(pos.sig.Phylum, neg.sig.Phylum, na.Phylum, non.sig.Phylum)
+  phylum.wdum2 <- c(pos.sig.Phylum, neg.sig.Phylum, na.Phylum, non.sig.Phylum)
   
   for(i in seq(1,length(Phylum),2)){
     phylum.wdum1[i] <- dummy[i]
@@ -1790,6 +2060,7 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
     if (sum(!is.na(tax.tab.num[ind,"Order"])) >= 1) {
       desc <- names(table(tax.tab.num[ind,"Order"]))
       desc <- str_replace_all(desc, " ", "")
+      desc <- desc[!(desc %in% "NA")]
       Class.desc[i] <- paste(Class[i], " -> {", paste(desc, collapse = " "), "}", sep = "", collapse = "")    
       connection <- c(connection, desc)
     }
@@ -1801,6 +2072,7 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   
   connection <- character()
   Order <- names(table(tax.tab.num[,"Order"]))
+  Order <- Order[!Order %in% "NA"]
   Order.desc <- c()
   for (i in 1:length(Order)) {
     ind <- which(tax.tab.num[,"Order"] == Order[i])
@@ -1808,10 +2080,10 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
     if (sum(!is.na(tax.tab.num[ind,"Family"])) >= 1) {
       desc <- names(table(tax.tab.num[ind,"Family"]))
       desc <- str_replace_all(desc, " ", "")
+      desc <- desc[!(desc %in% "NA")]
       Order.desc[i] <- paste(Order[i], " -> {", paste(desc, collapse = " "), "}", sep = "", collapse = "")    
       connection <- c(connection, desc)
     }
-    
     connection.with.upper[[3]] <- connection
   }
   Order.desc <- Order.desc[!is.na(Order.desc)]
@@ -1819,55 +2091,55 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   
   connection <- character()
   Family <- names(table(tax.tab.num[,"Family"]))
+  Family <- Family[!Family %in% "NA"]
   Family.desc <- c()
   for (i in 1:length(Family)) {
     ind <- which(tax.tab.num[,"Family"] == Family[i])
-    
     if (sum(!is.na(tax.tab.num[ind,"Genus"])) >= 1) {
       desc <- names(table(tax.tab.num[ind,"Genus"]))
       desc <- str_replace_all(desc, " ", "")
+      desc <- desc[!(desc %in% "NA")]
       Family.desc[i] <- paste(Family[i], " -> {", paste(desc, collapse = " "), "}", sep = "", collapse = "")    
       connection <- c(connection, desc)
     }
-    
     connection.with.upper[[4]] <- connection
   }
-  Family.desc <- Family.desc[!is.na(Family.desc)]
+  Family.desc <- Family.desc[!Family.desc %in% "NA"]
   Family.desc <- paste(Family.desc, collapse = "; ")
   
   connection <- character()
   Genus <- names(table(tax.tab.num[,"Genus"]))
+  Genus <- Genus[!Genus %in% "NA"]
   Genus.desc <- c()
   
   if(length(setdiff(Genus,connection.with.upper[[4]])) > 0){
     for (i in 1:length(Genus)) {
-      
       if(Genus[i] != setdiff(Genus, connection.with.upper[[4]])){
         ind <- which(tax.tab.num[,"Genus"] == Genus[i])
         
         if (sum(!is.na(tax.tab.num[ind,"Species"])) >= 1) {
           desc <- names(table(tax.tab.num[ind,"Species"]))
           desc <- str_replace_all(desc, " ", "")
+          desc <- desc[!(desc %in% "NA")]
           Genus.desc[i] <- paste(Genus[i], " -> {", paste(desc, collapse = " "), "}", sep = "", collapse = "")    
           connection <- c(connection, desc)
         }
-        
         connection.with.upper[[5]] <- connection 
       }
     }
-  }else if(length(setdiff(Genus,connection.with.upper[[4]])) == 0){
+  } else if(length(setdiff(Genus,connection.with.upper[[4]])) == 0){
     for (i in 1:length(Genus)) {
       ind <- which(tax.tab.num[,"Genus"] == Genus[i])
       
       if (sum(!is.na(tax.tab.num[ind,"Species"])) >= 1) {
         desc <- names(table(tax.tab.num[ind,"Species"]))
         desc <- str_replace_all(desc, " ", "")
+        desc <- desc[!(desc %in% "NA")]
         Genus.desc[i] <- paste(Genus[i], " -> {", paste(desc, collapse = " "), "}", sep = "", collapse = "")    
         connection <- c(connection, desc)
       }
       connection.with.upper[[5]] <- connection 
     }
-    
   }
   Genus.desc <- Genus.desc[!is.na(Genus.desc)]
   Genus.desc <- paste(Genus.desc, collapse = "; ")
@@ -1886,6 +2158,7 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   missing[[5]] <- setdiff(all.genus, connection.with.upper[[4]])
   missing[[6]] <- setdiff(all.species, connection.with.upper[[5]])
   
+  Class <- Class[!(Class %in% "NA")]
   sig.Class <- Class[!grepl("Class", Class)]
   #ind <- text.tab.all[,1] %in% Class[!grepl("Class", Class)]
   ind <- as.numeric(sig.Class)+1
@@ -1894,6 +2167,7 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   pos.sig.Class <- sig.Class[ind.pos.sig] 
   neg.sig.Class <- sig.Class[ind.neg.sig]
   
+  Order <- Order[!(Order %in% "NA")]
   sig.Order <- Order[!grepl("Order", Order)]
   #ind <- text.tab.all[,1] %in% Order[!grepl("Order", Order)]
   ind <- as.numeric(sig.Order)+1
@@ -1902,7 +2176,9 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   pos.sig.Order <- sig.Order[ind.pos.sig] 
   neg.sig.Order <- sig.Order[ind.neg.sig]
   
+  Family <- Family[!(Family %in% "NA")]
   sig.Family <- Family[!grepl("Family", Family)]
+  na.Family <- Family[grepl("NA", Family)]
   #ind <- text.tab.all[,1] %in% Family[!grepl("Family", Family)]
   ind <- as.numeric(sig.Family)+1
   ind.pos.sig <- which(ci.tab.all[ind,1] >= 0)
@@ -1910,22 +2186,25 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
   pos.sig.Family <- as.character(sig.Family[ind.pos.sig])
   neg.sig.Family <- as.character(sig.Family[ind.neg.sig])
   
+  Genus <- Genus[!(Genus %in% "NA")]
   sig.Genus <- Genus[!grepl("Genus", Genus)]
   ind <- as.numeric(sig.Genus)+1
-  #ind <- text.tab.all[,1] %in% Genus[!grepl("Genus", Genus)]
   ind.pos.sig <- which(ci.tab.all[ind,1] >= 0)
   ind.neg.sig <- which(ci.tab.all[ind,1] < 0)  
   pos.sig.Genus <- sig.Genus[ind.pos.sig] 
   neg.sig.Genus <- sig.Genus[ind.neg.sig]
   
+  Species <- Species[!(Species %in% "NA")]
   sig.Species <- Species[!grepl("Species", Species)]
-  #ind <- text.tab.all[,1] %in% Species[!grepl("Species", Species)]
   ind <- as.numeric(sig.Species)+1
-  ind.pos.sig <- which(ci.tab.all[ind,1] >= 0)
-  ind.neg.sig <- which(ci.tab.all[ind,1] < 0)  
-  pos.sig.Species <- sig.Species[ind.pos.sig] 
-  neg.sig.Species <- sig.Species[ind.neg.sig]
+  ind.pos.sig <- which(ci.tab.all[ind[!is.na(ind)],1] >= 0)
+  ind.neg.sig <- which(ci.tab.all[ind[!is.na(ind)],1] < 0)  
   
+  pos.sig.Species <- sig.Species[!grepl("NA", sig.Species)]
+  neg.sig.Species <- sig.Species[!grepl("NA", sig.Species)]
+  
+  pos.sig.Species <- pos.sig.Species[ind.pos.sig] 
+  neg.sig.Species <- neg.sig.Species[ind.neg.sig]
   
   if (species.include) {
     Bacteria.desc.dum <- paste(Bacteria.desc.dum, sep = "; ", collapse = "")
@@ -1936,7 +2215,10 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
     pos.sig.taxa <- c(pos.sig.Class, pos.sig.Order, pos.sig.Family, pos.sig.Genus, pos.sig.Species)
     neg.sig.taxa <- c(neg.sig.Class, neg.sig.Order, neg.sig.Family, neg.sig.Genus, neg.sig.Species)
     total.group <- c(Class, Order, Family, Genus, Species)
-    non.sig.taxa <- total.group[!total.group %in% c(pos.sig.taxa, neg.sig.taxa)] 
+    total.group <- total.group[!total.group %in% "NA"]
+    na.taxa <- total.group[grepl("NA", total.group)]
+    non.sig.taxa <- total.group[!total.group %in% c(pos.sig.taxa, neg.sig.taxa, na.taxa)] 
+    
   } else {
     Bacteria.desc.dum <- paste(Bacteria.desc.dum, sep = "; ", collapse = "")
     phy.to.phy <- paste(phy.to.phy, sep = "; ", collapse = "")
@@ -1946,15 +2228,18 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
     pos.sig.taxa <- c(pos.sig.Class, pos.sig.Order, pos.sig.Family, pos.sig.Genus)
     neg.sig.taxa <- c(neg.sig.Class, neg.sig.Order, neg.sig.Family, neg.sig.Genus)
     total.group <- c(Class, Order, Family, Genus)
-    non.sig.taxa <- total.group[!total.group %in% c(pos.sig.taxa, neg.sig.taxa)] 
+    total.group <- total.group[!total.group %in% "NA"]
+    na.taxa <- total.group[grepl("NA", total.group)]
+    non.sig.taxa <- total.group[!total.group %in% c(pos.sig.taxa, neg.sig.taxa, na.taxa)] 
   }
+  Taxa.desc <- str_remove_all(Taxa.desc, " NA;")
   
   flow.text.dum <- list()
-  length(flow.text.dum) <- 5
+  length(flow.text.dum) <- 6
   
   neg <- 1
   non <- 1
-  
+  na <- 1
   for(i in 1:length(phylum.wdum1)){
     if(phylum.wdum1[i] %in% pos.sig.Phylum){
       flow.text.dum[[1]][i] <- paste(pos.sig.Phylum[i], paste("[fontname = Helvetica, shape = circle, fontsize = 11, fixedsize = true, width = 0.3, style = filled, fillcolor = indianred, label = ",pos.sig.Phylum[i],"]", sep = " "))
@@ -1973,6 +2258,13 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
       flow.text.dum[[1]][i] <- paste(non.sig.Phylum[non], paste("[fontname = Helvetica, shape = point, fixedsize = true, width = 0.1, style = filled, fillcolor = grey, label = '']", sep = " "))
       non <- non+1
     }
+    else if(phylum.wdum1[i] %in% na.Phylum){
+      flow.text.dum[[1]][i] <- paste(na.Phylum[na], paste("[fontname = Helvetica, shape = circle, fontsize = 5, fixedsize = true, width = 0.1, style = '', label = '']", sep = " "))
+      na <- na+1
+    }else if(phylum.wdum2[i] %in% na.Phylum){
+      flow.text.dum[[1]][i] <- paste(na.Phylum[na], paste("[fontname = Helvetica, shape = circle, fontsize = 5, fixedsize = true, width = 0.1, style = '', label = '']", sep = " "))
+      na <- na+1
+    }
   }
   
   if(length(pos.sig.taxa) >0){
@@ -1981,27 +2273,34 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
     }
   }
   
-  if(length(neg.sig.taxa)){
+  if(length(neg.sig.taxa) >0){
     for(i in 1:length(neg.sig.taxa)){
       flow.text.dum[[3]][i] <- paste(neg.sig.taxa[i], paste("[fontname = Helvetica, shape = circle, fontsize = 10, fixedsize = true, width = 0.25, style = filled, fillcolor = steelblue, label = ",neg.sig.taxa[i],"]", sep = " "))
     }
   }
   
-  if(length(non.sig.taxa)){
+  if(length(non.sig.taxa) >0){
     for(i in 1:length(non.sig.taxa)){
       flow.text.dum[[4]][i] <- paste(non.sig.taxa[i], paste("[fontname = Helvetica, shape = point, fixedsize = true, width = 0.1, style = filled, fillcolor = grey, label = '']", sep = " "))
     }
   }
   
-  for(i in 1:length(dummy)){
-    flow.text.dum[[5]][i] <- paste(dummy[i], "[fontname = Helvetica, shape = point, width = 0, style = invi, label = '']", sep = " ")
+  if(length(na.taxa) >0){
+    for(i in 1:length(na.taxa)){
+      flow.text.dum[[5]][i] <- paste(na.taxa[i], paste("[fontname = Helvetica, shape = circle, fontsize = 5, fixedsize = true, width = 0.1, style = '', label = '']", sep = " "))
+    }
+  }
+  
+  if(length(dummy) >0){
+    for(i in 1:length(dummy)){
+      flow.text.dum[[6]][i] <- paste(dummy[i], paste("[fontname = Helvetica, shape = point, width = 0, style = invi, label = '']", sep = " "))
+    }
   }
   
   flow.text.dum.complete <- c()
-  for(i in 1:5){
+  for(i in 1:6){
     flow.text.dum.complete <- paste(flow.text.dum.complete, flow.text.dum[[i]], sep = "\n ")
   }
-  
   
   flow.text <- paste("digraph ", layout.type, " {",
                      paste("graph [layout = ",layout.type,", root = Bacteria, ranksep = \"2 0.3 1 1 1 \"]", collapse = ""),
@@ -2011,6 +2310,9 @@ taxa.sig.dend <- function(out, tax.tab, layout.type = "twopi", species.include =
                      Taxa.desc,
                      "}", sep = "\n")
   
-  print(grViz(flow.text))
+  taxon.tab <- data.frame("ID" = text.tab.all[-1,1],
+                          #"Status" = ifelse( ci.tab.all[-1] < 0, "neg", "pos"), # "blue", "red"),
+                          "Taxon" = sub(".*;", "", text.tab.all[-1,3]))
   
+  return(list(flow.text = grViz(flow.text), taxon.tab = taxon.tab, ci.tab.all = ci.tab.all) )
 }
