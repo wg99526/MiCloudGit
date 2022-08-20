@@ -3481,11 +3481,6 @@ server = function(input, output, session) {
             )
           })
           
-          output$taxa_display_dend = renderUI({
-            box(title = strong("Dendrogram", style = "color:black"), width = NULL, status = "primary", solidHeader = TRUE,
-                grVizOutput("dendrogram", height = 1000))
-          })
-          
           output$rank1 = renderPlot({ 
             taxa.bin.boxplot(taxa_dataBinvar, taxa_dataTaxa, taxa.outputs$DAoutput, chooseData$taxa.names.out, 1, TRUE)  ####all.t.test.united should be used
           })
@@ -3510,7 +3505,6 @@ server = function(input, output, session) {
             taxa.bin.boxplot(taxa_dataBinvar, taxa_dataTaxa, taxa.outputs$DAoutput, chooseData$taxa.names.out, 6, TRUE)  ####all.t.test.united should be used
           })
           
-          
           taxa.sig <- taxa.sig.dend(taxa.outputs$DAoutput, chooseData$NAadded$tax.tab, "twopi", include)
           
           flow.text <- taxa.sig$flow.text
@@ -3518,6 +3512,7 @@ server = function(input, output, session) {
           ci.tab.all <- taxa.sig$ci.tab.all
           
           if ( include == FALSE){
+            ci.tab.all <- ci.tab.all[-(grep("s_", taxon.tab$Taxon, fixed = TRUE)+1)]
             taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
           }
           
@@ -3535,6 +3530,7 @@ server = function(input, output, session) {
               
             }
           }
+          
           
           N <- dim(taxon.tab)[1]
           itr <- ceiling(N/5)
@@ -3811,8 +3807,8 @@ server = function(input, output, session) {
             taxon.tab <- taxa.sig$taxon.tab
             ci.tab.all <- taxa.sig$ci.tab.all
             
-            
             if ( include == FALSE){
+              ci.tab.all <- ci.tab.all[-(grep("s_", taxon.tab$Taxon, fixed = TRUE)+1)]
               taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
             }
             
@@ -3930,7 +3926,8 @@ server = function(input, output, session) {
               duplicate.list(duplicate.taxa, taxon.inplot, chooseData$taxa.names.out$duplicates)
             })
             
-          } else {
+          } 
+          else {
             if (duplicate.texts>0) {
               output$taxa_display = renderUI({
                 tagList(
@@ -3975,8 +3972,8 @@ server = function(input, output, session) {
             taxon.tab <- taxa.sig$taxon.tab
             ci.tab.all <- taxa.sig$ci.tab.all
             
-            
             if ( include == FALSE){
+              ci.tab.all <- ci.tab.all[-(grep("s_", taxon.tab$Taxon, fixed = TRUE)+1)]
               taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
             }
             
@@ -4341,6 +4338,7 @@ server = function(input, output, session) {
         ci.tab.all <- taxa.sig$ci.tab.all
         
         if ( include == FALSE){
+          ci.tab.all <- ci.tab.all[-(grep("s_", taxon.tab$Taxon, fixed = TRUE)+1)]
           taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
         }
         
@@ -4739,6 +4737,7 @@ server = function(input, output, session) {
         ci.tab.all <- taxa.sig$ci.tab.all
         
         if ( include == FALSE){
+          ci.tab.all <- ci.tab.all[-(grep("s_", taxon.tab$Taxon, fixed = TRUE)+1)]
           taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
         }
         
@@ -5087,6 +5086,7 @@ server = function(input, output, session) {
         ci.tab.all <- taxa.sig$ci.tab.all
         
         if ( include == FALSE){
+          ci.tab.all <- ci.tab.all[-(grep("s_", taxon.tab$Taxon, fixed = TRUE)+1)]
           taxon.tab <- taxon.tab[ !grepl("s_", taxon.tab$Taxon, fixed = TRUE), ]
         }
         
@@ -5284,8 +5284,7 @@ server = function(input, output, session) {
         shinyjs::enable("clustervar_taxa")
       }
     )
-  }, ignoreNULL = TRUE, ignoreInit = TRUE)
-  
+  }, ignoreNULL = TRUE, ignoreInit = TRUE)  
 }
 
 shinyApp(ui = ui, server = server)
