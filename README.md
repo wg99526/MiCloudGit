@@ -2,9 +2,9 @@
 
 Title: MiCloud: A Unified Web Platform for Comprehensive Microbiome Data Analysis
 
-Version: 1.2.1
+Version: 1.3.1
 
-Date: 2022-05-28
+Date: 2022-08-20
 
 Maintainer: Won Gu <wpg5129@psu.edu>
 
