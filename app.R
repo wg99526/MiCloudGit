@@ -203,7 +203,7 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
                     tags$ol(
                       tags$li(HOME_COMMENT1), tags$li(HOME_COMMENT2), tags$li(HOME_COMMENT3), tags$li(HOME_COMMENT4), tags$li(HOME_COMMENT5),
                       style = "font-size:13pt"),
-                    HOME_COMMENT6)),
+                    HOME_COMMENT6, br(), HOME_COMMENT7, br(), HOME_COMMENT8)),
         
         ##### DATA INPUT ####
         tabItem(tabName = "step1", br(),
