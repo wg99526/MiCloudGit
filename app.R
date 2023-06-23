@@ -199,12 +199,7 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
                     tags$ol(
                       tags$li(HOME_COMMENT1), tags$li(HOME_COMMENT2), tags$li(HOME_COMMENT3), tags$li(HOME_COMMENT4), tags$li(HOME_COMMENT5),
                       style = "font-size:13pt"),
-                    HOME_COMMENT6, br(),
-                    fluidRow(
-                      column(3,
-                             selectInput("selectTheme", strong("Select Theme", style = "font-size:14pt"), 
-                                         c("Choose one" = "", "Flat Red", "Gray Dark", "Gray Light",
-                                           "Onenote (Default)", "Poor Mans Flatly", "Purple Gradient")))))),
+                    HOME_COMMENT6)),
         
         ##### DATA INPUT ####
         tabItem(tabName = "step1", br(),
@@ -504,36 +499,6 @@ server = function(input, output, session) {
   
   rcol = reactiveValues(selected = "lightblue") 
   
-  ## options to change theme ####
-  observeEvent(input$selectTheme, {
-    output$themes <- renderUI({
-      if (input$selectTheme == "Flat Red") {
-        shinyDashboardThemes(
-          theme = "flat_red"
-        )
-      } else if (input$selectTheme == "Gray Dark") {
-        shinyDashboardThemes(
-          theme = "grey_dark"
-        )
-      } else if (input$selectTheme =="Gray Light") {
-        shinyDashboardThemes(
-          theme = "grey_light"
-        )
-      } else if (input$selectTheme =="Onenote (Default)") {
-        shinyDashboardThemes(
-          theme = "onenote"
-        )
-      } else if (input$selectTheme == "Poor Mans Flatly") {
-        shinyDashboardThemes(
-          theme = "poor_mans_flatly"
-        )
-      } else if (input$selectTheme == "Purple Gradient") {
-        shinyDashboardThemes(
-          theme = "purple_gradient"
-        )
-      }
-    })
-  }, ignoreInit = TRUE)
   ## options to input ####
   observeEvent(input$inputOption,{
     observe({
