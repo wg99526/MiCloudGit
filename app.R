@@ -204,6 +204,9 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
                     tags$ol(
                       tags$li(HOME_COMMENT1), tags$li(HOME_COMMENT2), tags$li(HOME_COMMENT3), tags$li(HOME_COMMENT4), tags$li(HOME_COMMENT5),
                       style = "font-size:13pt"),
+                    br(),
+                    div(tags$img(src="dendrogram.jpeg", height = 500, weight = 500), style =  "text-align: center;"),
+                    br(),
                     HOME_COMMENT6, br(),p(" ", style = "margin-bottom: -20px;"), HOME_COMMENT7, br(),p(" ", style = "margin-bottom: -20px;"), HOME_COMMENT8)),
         
         ##### DATA INPUT ####
