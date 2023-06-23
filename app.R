@@ -208,14 +208,14 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
         
         ##### DATA INPUT ####
         tabItem(tabName = "step1", br(),
-                fluidRow(column(width = 6, style='padding-left:0px',
-                       box(
+                column(width = 6, style='padding-left:0px',
+                       fluidRow(box(
                          width = NULL, status = "primary", solidHeader = TRUE,
                          title = strong("Data Input", style = "color:black"),
                          selectInput("inputOption", h4(strong("Data Type?")), c("Choose one" = "", "Phyloseq", "Individual Data"), width = '30%'),
                          div(id = "optionsInfo", tags$p("You can choose phyloseq or individual data.", style = "font-size:11pt"), style = "margin-top: -15px"),
-                         uiOutput("moreOptions"))),
-                column(width = 6, style='padding-left:0px', uiOutput("addDownloadinfo")))),
+                         uiOutput("moreOptions")))),
+                column(width = 6, style='padding-left:0px', fluidRow(uiOutput("addDownloadinfo")))),
         
         ##### QC ####
         tabItem(tabName = "step2", br(), 
