@@ -61,11 +61,11 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
   HOME_COMMENT4 = ("Comparative analysis with or without covariate (e.g., age, gender) adjustment(s) for either 
                    cross-sectional or longitudinal/family-based microbiome study design.")
   HOME_COMMENT5 = ("Adjustable/downloadable/publishable data, tables and graphs.")
-  HOME_COMMENT6 = p(strong("URLs:", style = "font-size:15pt"), "Web Server (http://micloud.kr), Github (https://github.com/wg99526/MiCloudGit)")
-  HOME_COMMENT7 = p(strong("Maintainer:", style = "font-size:15pt"), "Won Gu (wpg5129@psu.edu)")
-  HOME_COMMENT8 = p(strong("Reference:", style = "font-size:15pt"), 
+  HOME_COMMENT6 = p(strong("URLs:", style = "font-size:15pt"), "Web Server (http://micloud.kr), Github (https://github.com/wg99526/MiCloudGit)", style = "font-size:13pt")
+  HOME_COMMENT7 = p(strong("Maintainer:", style = "font-size:13pt"), "Won Gu (wpg5129@psu.edu)", style = "font-size:13pt")
+  HOME_COMMENT8 = p(strong("Reference:", style = "font-size:13pt"), 
                     " Gu W, Moon J, Chisina C, Kang B, Park T, Koh H (2022) MiCloud: A unified web platform for comprehensive microbiome data analysis.",  
-                    p("PLoS ONE", em("italic font")), " 17(8): e0272354. https://doi.org/10.1371/journal.pone.0272354", style = "font-size:13pt")
+                    "PLoS ONE 17(8): e0272354. https://doi.org/10.1371/journal.pone.0272354", style = "font-size:13pt")
   
   INPUT_PHYLOSEQ_COMMENT1 = p("Description:", br(), br(), "This should be an '.Rdata' or '.rds' file, and the data should be in 'phyloseq' format (see ", 
                               a(tags$u("https://bioconductor.org/packages/release/bioc/html/phyloseq.html"), style = "color:red3"),
@@ -203,7 +203,7 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
                     tags$ol(
                       tags$li(HOME_COMMENT1), tags$li(HOME_COMMENT2), tags$li(HOME_COMMENT3), tags$li(HOME_COMMENT4), tags$li(HOME_COMMENT5),
                       style = "font-size:13pt"),
-                    HOME_COMMENT6, br(), HOME_COMMENT7, br(), HOME_COMMENT8)),
+                    HOME_COMMENT6, br(),p(" ", style = "margin-bottom: -20px;"), HOME_COMMENT7, br(),p(" ", style = "margin-bottom: -20px;"), HOME_COMMENT8)),
         
         ##### DATA INPUT ####
         tabItem(tabName = "step1", br(),
