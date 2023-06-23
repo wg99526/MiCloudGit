@@ -61,7 +61,8 @@ source("Source/MiDataProc.Taxa.Longitudinal.R")
   HOME_COMMENT4 = ("Comparative analysis with or without covariate (e.g., age, gender) adjustment(s) for either 
                    cross-sectional or longitudinal/family-based microbiome study design.")
   HOME_COMMENT5 = ("Adjustable/downloadable/publishable data, tables and graphs.")
-  HOME_COMMENT6 = p(strong("URLs:", style = "font-size:15pt"), "Web Server (http://micloud.kr), Github (https://github.com/wg99526/MiCloudGit)", style = "font-size:13pt")
+  HOME_COMMENT6 = p(strong("URLs:", style = "font-size:15pt"), a("Web Server (http://micloud.kr)", href = "http://micloud.kr", target = "blank"), 
+                                                                 a("Github (https://github.com/wg99526/MiCloudGit)", href = "https://github.com/wg99526/MiCloudGit", target = "blank"), style = "font-size:13pt")
   HOME_COMMENT7 = p(strong("Maintainer:", style = "font-size:13pt"), "Won Gu (wpg5129@psu.edu)", style = "font-size:13pt")
   HOME_COMMENT8 = p(strong("Reference:", style = "font-size:13pt"), 
                     " Gu W, Moon J, Chisina C, Kang B, Park T, Koh H (2022) MiCloud: A unified web platform for comprehensive microbiome data analysis.",  
