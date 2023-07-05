@@ -3593,7 +3593,7 @@ server = function(input, output, session) {
               kable_styling(latex_options = c('hold_position'))
             sig.tab4
           })
-          output$bin5_taxonlistt <- renderText({
+          output$bin5_taxonlist <- renderText({
             
             sig.tab5 <- kable(tab.five, 'html', booktabs =TRUE, escape = FALSE) %>%
               kable_styling(latex_options = c('hold_position'))
@@ -3889,7 +3889,7 @@ server = function(input, output, session) {
                 kable_styling(latex_options = c('hold_position'))
               sig.tab4
             })
-            output$bin5_taxonlistt <- renderText({
+            output$bin5_taxonlist <- renderText({
               
               sig.tab5 <- kable(tab.five, 'html', booktabs =TRUE, escape = FALSE) %>%
                 kable_styling(latex_options = c('hold_position'))
@@ -4054,7 +4054,7 @@ server = function(input, output, session) {
                 kable_styling(latex_options = c('hold_position'))
               sig.tab4
             })
-            output$bin5_taxonlistt <- renderText({
+            output$bin5_taxonlist <- renderText({
               
               sig.tab5 <- kable(tab.five, 'html', booktabs =TRUE, escape = FALSE) %>%
                 kable_styling(latex_options = c('hold_position'))
@@ -4418,7 +4418,7 @@ server = function(input, output, session) {
             kable_styling(latex_options = c('hold_position'))
           sig.tab4
         })
-        output$con5_taxonlistt <- renderText({
+        output$con5_taxonlist <- renderText({
           
           sig.tab5 <- kable(tab.five, 'html', booktabs =TRUE, escape = FALSE) %>%
             kable_styling(latex_options = c('hold_position'))
@@ -5166,7 +5166,7 @@ server = function(input, output, session) {
             kable_styling(latex_options = c('hold_position'))
           sig.tab4
         })
-        output$Lcon5_taxonlistt <- renderText({
+        output$Lcon5_taxonlist <- renderText({
           
           sig.tab5 <- kable(tab.five, 'html', booktabs =TRUE, escape = FALSE) %>%
             kable_styling(latex_options = c('hold_position'))
